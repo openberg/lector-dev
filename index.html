@@ -1,0 +1,39 @@
+<!DOCTYPE HTML>
+<html> <head>
+<title>Lector</title>
+<meta name="viewport" 
+  content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8" />
+<!-- Module handling -->
+<script data-main="app" src="lib/require.js/require.js"
+type="text/javascript" defer="defer"></script>
+
+<!-- Legacy modules (non-AMD) -->
+<script src="lib/zip.js/WebContent/zip.js"
+type="text/javascript" defer="defer"></script>
+
+<link rel="stylesheet" type="text/css" href="css/style.css" />
+</head>
+<body>
+<div id="lector">
+<div id="welcome">
+  <h1 id="title">
+  Welcome to Lector
+  </h1>
+   <div id="pick_file" class="open">
+     Open a book
+     <input type="file" id="pick_file_control"/>
+   </div>
+     <!-- FIXME: Handle Firefox OS opening -->
+     <!-- FIXME: Style this page -->
+     <!-- FIXME: List of bookmarks -->
+</div>
+
+<div id="pages">
+  <div id="flipbook">
+    </div>
+<div class="control" id="go_left"></div>
+<div class="control" id="go_right"></div>
+</div>
+</body>
+</html>
