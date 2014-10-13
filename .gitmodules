@@ -1,0 +1,6 @@
+[submodule "lib/readium"]
+	path = lib/readium
+	url = https://github.com/readium/readium-js-viewer.git
+[submodule "lib/finderjs"]
+	path = lib/finderjs
+	url = https://github.com/applait/finderjs.git
