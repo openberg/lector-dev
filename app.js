@@ -6,6 +6,18 @@ window.require(['js/observable', 'js/book'],
 
 var $ = id => document.getElementById(id);
 
+//////////////////////////
+// Self-test mechanism  //
+//////////////////////////
+
+var bookURL = new URL(window.location + "/../lib/readium-js-viewer/epub_content/internal_link.epub");
+var book = new Book(bookURL);
+book.init().then(() => {
+  console.log("Book is initialized", book.title, book.author);
+  console.log("Chapters", book.chapters);
+});
+
+
 /**
  * The file picker.
  */
@@ -38,6 +50,7 @@ filePicker.addObserver("open", e => {
 
   book.init().then(() => {
     console.log("Book is initialized", book.title, book.author);
+    console.log("Chapters", book.chapters);
   });
 });
 

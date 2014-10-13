@@ -1,62 +1,9 @@
 window.define(['js/observable',
-               'js/zip'],
-              function(Observable, Zip) {
+               'js/archive'],
+              function(Observable, Archive) {
 "use strict";
 
 var console = window.console;
-var URL = window.URL;
-
-/**
- * @constructor
- */
-var Archive = function(file) {
-  if (!(file instanceof window.File)) {
-    throw new TypeError("Expected a File");
-  }
-  this._promiseReader =
-    new Promise(resolve => Zip.createReader(new Zip.BlobReader(file), resolve));
-};
-Archive.prototype = {
-  promiseEntries: function() {
-    return new Promise(resolve =>
-      this._promiseReader.then(reader => {
-        return reader.getEntries(resolve);
-    }));
-  },
-};
-
-var findWithFallback = function(array, ideal) {
-  if (array.length == 0) {
-    throw new Error("Could not find document " + ideal + " or any fallback");
-  }
-  if (array.length == 1) {
-    return array[0];
-  }
-  var result = array.find(x => x.filename == ideal);
-  if (result) {
-    return result;
-  }
-  return array[0];
-};
-
-/**
- * Parse binary data to XML, asynchronously.
- */
-var promiseParseXML = function(blob) {
-  var url = URL.createObjectURL(blob);
-  var parser = new XMLHttpRequest();
-  parser.responseType = "xml";
-  var result = new Promise(resolve => {
-    parser.addEventListener("loadend", (e) => {
-      URL.revokeObjectURL(url);
-      resolve(parser.responseXML);
-    });
-    // FIXME: Handle errors
-  });
-  parser.open("GET", url);
-  parser.send();
-  return result;
-};
 
 /**
  * Representation of a book.
@@ -67,62 +14,64 @@ var promiseParseXML = function(blob) {
  */
 var Book = function(file) {
   Observable.call(this, ["open"]);
+
+  // Function to call once initialization is complete.
+  var resolveInitialized = null;
+
   this._archive = new Archive(file);
   this._initialized = false;
   this._package = null;
   this._toc = null;
-
-  var resolveInitialized = null;
-  this._promiseInitialized = new Promise(resolve => resolveInitialized = resolve);;
-
+  this._promiseInitialized = new Promise(resolve => resolveInitialized = resolve);
+  this._promiseInitialized.then(() => this._initialized = true);
+  this._chapters = [];
+  this._resolveTo = null;
 
   // Read package document and toc document.
-  var promise = this._archive.promiseEntries();
+  var promise = this._archive.init();
 
-  promise = promise.then(entries => {
-    // The package document has extension ".opf". Generally, it is
-    // called "content.opf", but there is no obligation. Similarly,
-    // the toc document has extension ".ncx" but and could be
-    // "toc.ncx".
-    var opfEntries = [];
-    var ncxEntries = [];
-    for (var e of entries) {
-      if (e.filename.endsWith(".opf")) {
-        opfEntries.push(e);
-      } else if (e.filename.endsWith(".ncx")) {
-        ncxEntries.push(e);
-      }
-    }
-    var packageEntry = findWithFallback(opfEntries, "content.opf");
-    var tocEntry = findWithFallback(ncxEntries, "toc.ncx");
-
-    var promisePackageBlob = new Promise(resolve => {
-      return packageEntry.getData(new Zip.BlobWriter(), resolve);
-    });
-    var promiseTocBlob = new Promise(resolve => {
-      return tocEntry.getData(new Zip.BlobWriter(), resolve);
-    });
-    return Promise.all([promisePackageBlob, promiseTocBlob]);
+  promise = promise.then(() => {
+    // File `container.xml` tells us where we can find the package document.
+    // (generally OEBPS/content.opf).
+    var containerEntry = this._archive.entries.get("META-INF/container.xml");
+    return containerEntry.asXML();
   });
-  promise = promise.then(([packageBlob, tocBlob]) => {
-    var promisePackage = promiseParseXML(packageBlob);
-    var promiseToc = promiseParseXML(tocBlob);
 
-    return Promise.all([promisePackage, promiseToc]);
+  promise = promise.then(container => {
+    // Extract the information and parse the package document.
+    var eltRoot = container.querySelector("container > rootfiles > rootfile");
+    var path = eltRoot.getAttribute("full-path");
+    this._resolveTo = path.substring(0, path.lastIndexOf("/"));;
+    return this._archive.entries.get(path).asXML();
   });
-  promise = promise.then(([pkg, toc]) => {
+
+  promise = promise.then((pkg) => {
     this._package = pkg;
-    this._toc = toc;
-    this._initialized = true;
-    resolveInitialized();
+    
+    // Extract the table of contents
+    console.log("I have the following files", [...this._archive.entries.keys()]);
+    for (var itemref of pkg.querySelectorAll("package > spine > itemref")) {
+      var item = pkg.getElementById(itemref.getAttribute("idref"));
+      var href = item.getAttribute("href");
+      var url;
+      try {
+        // The url may be absolute
+        url = (new URL(href)).href;
+      } catch (ex if ex instanceof TypeError) {
+        // ... or relative.
+        url = this._resolveTo ? this._resolveTo + "/" + href : href;
+      }
+      console.log("Looking for url", url, href);
+      this._chapters.push(this._archive.entries.get(url));
+    }
   });
-  promise = promise.then(null, ex => {
-    console.error("Error reading book metadata", ex);
+
+
+  promise = promise.then(resolveInitialized, ex => {
+    // Make sure that errors are reported early.
+    console.error("Error reading book metadata", ex, ex.stack);
     throw ex;
   });
-
-  // Now extract useful information from metadata
-  
 };
 Book.prototype = {
   __proto__: Object.create(Observable.prototype),
@@ -157,8 +106,8 @@ Book.prototype = {
 
   get title() {
     var node =
-        this._tocDocument.querySelector("ncx > docTitle > text")
-     || this._packageDocument.querySelector("package > metadata > title");
+        this._packageDocument.querySelector("package > metadata > title")
+     || this._tocDocument.querySelector("ncx > docTitle > text");
     if (node) {
       return node.textContent;
     }
@@ -167,12 +116,17 @@ Book.prototype = {
 
   get author() {
     var node =
-        this._tocDocument.querySelector("ncx > docAuthor > text")
-     || this._packageDocument.querySelector("package > metadata > creator");
+        this._packageDocument.querySelector("package > metadata > creator")
+     || this._tocDocument.querySelector("ncx > docAuthor > text");
     if (node) {
       return node.textContent;
     }
     return undefined;
+  },
+
+  get chapters() {
+    this._ensureInitialized();
+    return this._chapters;
   },
 };
 
