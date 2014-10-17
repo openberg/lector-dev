@@ -1,4 +1,4 @@
-window.define(function() {
+window.define(['js/urlutils'], function(UrlUtils) {
 "use strict";
 
 var zip = window.zip; // The zip library, defined by lib/zip.js/WebContent/zip.js
@@ -6,12 +6,10 @@ var URL = window.URL;
 
 //
 // Configure lib/zip.js/WebContent/zip.js so that the Web Worker
-// can find its own data.
+// can find its own source.
 //
-var url = new window.URL(window.location);
-url.pathname += "/../lib/zip.js/WebContent/";
-window.zip.workerScriptsPath = url.href;
-
+var scriptPath = UrlUtils.toURL("lib/zip.js/WebContent/");
+window.zip.workerScriptsPath = scriptPath.href;
 
 /**
  * Representation of a zip file.
@@ -22,27 +20,38 @@ window.zip.workerScriptsPath = url.href;
 var Archive = function(file) {
   this._entries = new Map();
   this._initialized = false;
+  this._promiseReader = null;
+  this._name = null;
   if (file instanceof window.File) {
-    this._promiseReader = new Promise(resolve =>
-      zip.createReader(new zip.BlobReader(file), resolve));
-    this._name = file.name;
+    this._initFromFile(file);
   } else if (file instanceof window.URL) {
-    this._promiseReader = new Promise(resolve => {
-      var downloader = new XMLHttpRequest();
-      downloader.addEventListener("loadend", (e) => {
-        zip.createReader(new zip.BlobReader(downloader.response), resolve);
-      });
-      downloader.open("GET", file.href);
-      downloader.responseType = "blob";
-      downloader.send();
-    });
-    this._name = file.href;
+    this._initFromURL(file);
+  } else if (typeof file == "string") {
+    this._initFromURL(UrlUtils.toURL(file));
   } else {
     throw new TypeError("Expected a File or a URL");
   }
 };
 
 Archive.prototype = {
+  _initFromFile: function(file) {
+    this._promiseReader = new Promise(resolve =>
+      zip.createReader(new zip.BlobReader(file), resolve));
+    this._name = file.name;
+  },
+  _initFromURL: function(url) {
+    console.log("Archive: Attempting to open url", url);
+    this._promiseReader = new Promise(resolve => {
+      var downloader = new XMLHttpRequest();
+      downloader.addEventListener("loadend", (e) => {
+        zip.createReader(new zip.BlobReader(downloader.response), resolve);
+      });
+      downloader.open("GET", url.href);
+      downloader.responseType = "blob";
+      downloader.send();
+    });
+    this._name = url.href;
+  },
   /**
    * Finish initialization of the archive.
    *

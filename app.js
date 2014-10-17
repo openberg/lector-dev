@@ -1,21 +1,41 @@
-window.require(['js/observable', 'js/book'],
-  function(Observable, Book) {
+window.require(['js/observable',
+                'js/book',
+                'js/urlutils'],
+  function(Observable, Book, UrlUtils) {
 "use strict";
 
 // FIXME: Populate list of previously read books/bookmarks
 
+// FIXME: window.location + .. is not always good
+
 var $ = id => document.getElementById(id);
 
-//////////////////////////
-// Self-test mechanism  //
-//////////////////////////
+var params = new URL(window.location).searchParams;
+console.log(params);
+try {
+  var bookURL = null;
+  if (params.has("book")) {
+    bookURL = UrlUtils.toURL(params.get("book"));
+  }
 
-var bookURL = new URL(window.location + "/../lib/readium-js-viewer/epub_content/internal_link.epub");
-var book = new Book(bookURL);
-book.init().then(() => {
-  console.log("Book is initialized", book.title, book.author);
-  console.log("Chapters", book.chapters);
-});
+  if (bookURL) {
+    var book = new Book(bookURL);
+    var chapterNum = 0;
+    if (params.has("chapter")) {
+      chapterNum = Number.parseInt(params.get("chapter"));
+    }
+    book.init().then(() => {
+      console.log("Book is initialized", book.title, book.author);
+      console.log("Chapters", book.chapters);
+      var promise = book.chapters[chapterNum].asObjectURL();
+      promise = promise.then(url => {
+        $("contents").setAttribute("src", url);
+      });
+    });
+  }
+} catch (ex) {
+  console.error(ex);
+}
 
 
 /**

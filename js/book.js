@@ -106,8 +106,7 @@ Book.prototype = {
 
   get title() {
     var node =
-        this._packageDocument.querySelector("package > metadata > title")
-     || this._tocDocument.querySelector("ncx > docTitle > text");
+        this._packageDocument.querySelector("package > metadata > title");
     if (node) {
       return node.textContent;
     }
@@ -116,8 +115,7 @@ Book.prototype = {
 
   get author() {
     var node =
-        this._packageDocument.querySelector("package > metadata > creator")
-     || this._tocDocument.querySelector("ncx > docAuthor > text");
+        this._packageDocument.querySelector("package > metadata > creator");
     if (node) {
       return node.textContent;
     }
