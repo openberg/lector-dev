@@ -1,11 +1,11 @@
 body {
-    -webkit-column-fill: auto;
-    -webkit-column-width: 300px;
+/*    -webkit-column-fill: auto;
     -webkit-column-gap: 40px;
-    -moz-column-fill: auto;
     -moz-column-width: 300px;
     -moz-column-gap: 40px;
-    height: 120px;
+    height: 120px;*/
+    -webkit-column-width: 300px;
+    -moz-column-fill: auto;
     padding: 0 20px;
     text-align: justify;
     width: auto;

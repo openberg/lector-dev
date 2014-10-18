@@ -1,14 +1,26 @@
 window.require(['js/observable',
                 'js/book',
-                'js/urlutils'],
-  function(Observable, Book, UrlUtils) {
+                'js/urlutils',
+                'js/window'],
+  function(Observable, Book, UrlUtils, Window) {
 "use strict";
 
 // FIXME: Populate list of previously read books/bookmarks
 
-// FIXME: window.location + .. is not always good
-
 var $ = id => document.getElementById(id);
+
+var Contents = {
+  elt: $("contents"),
+  updateDimensions: function() {
+    Contents.elt.style.innerWidth = Window.innerWidth + "px";
+    Contents.elt.style.innerHeight = Window.innerHeight + "px";
+  },
+  init: function() {
+    Window.addObserver("resize", () => Contents.updateDimensions());
+    Contents.updateDimensions();
+  },
+};
+Contents.init();
 
 var params = new URL(window.location).searchParams;
 console.log(params);
@@ -33,13 +45,25 @@ try {
         // Adapt XML document for proper display.
         //
         var head = xml.querySelector("html > head");
+        var body = xml.querySelector("html > body");
 
-        // 1. Inject book stylesheet
+        // 1. Inject global book stylesheet
         var link = xml.createElement("link");
         link.setAttribute("rel", "stylesheet");
         link.setAttribute("type", "text/css");
         link.setAttribute("href", UrlUtils.toURL("css/books.css"));
         head.appendChild(link);
+
+        // 2. Inject style data customized for the screen size
+        console.log("MozColumnWidth", Window.innerWidth + "px");
+        body.style.MozColumnWidth = Window.innerWidth + "px";
+        body.style.MozColumnGap = "40px";
+        body.style.height = Window.innerHeight + "px";
+        console.log("MozColumnWidth", Window.innerWidth + "px");
+        console.log("height", Window.innerHeight + "px");
+
+        // FIXME: Add WebKit (and other) equivalents
+        // FIXME: Adapt when screen changes,
 
         // FIXME: Do we need to inject <script>?
         // FIXME: We probably want to rewrite all links

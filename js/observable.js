@@ -2,6 +2,9 @@ window.define(function() {
   "use strict";
 
   function Observable(events) {
+    if (!Array.isArray(events)) {
+      throw new TypeError("Expected an Array");
+    }
     /**
      * Observers for the events of `this._events`.
      */
