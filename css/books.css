@@ -1,3 +1,12 @@
 body {
-    background: blue;
+    -webkit-column-fill: auto;
+    -webkit-column-width: 300px;
+    -webkit-column-gap: 40px;
+    -moz-column-fill: auto;
+    -moz-column-width: 300px;
+    -moz-column-gap: 40px;
+    height: 120px;
+    padding: 0 20px;
+    text-align: justify;
+    width: auto;
 }
