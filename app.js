@@ -27,10 +27,34 @@ try {
     book.init().then(() => {
       console.log("Book is initialized", book.title, book.author);
       console.log("Chapters", book.chapters);
-      var promise = book.chapters[chapterNum].asObjectURL();
-      promise = promise.then(url => {
+      var promise = book.chapters[chapterNum].asXML();
+      promise = promise.then(xml => {
+        var head = xml.querySelector("html > head");
+        var link = xml.createElement("link");
+        link.setAttribute("rel", "stylesheet");
+        link.setAttribute("type", "text/css");
+        link.setAttribute("href", UrlUtils.toURL("css/books.css"));
+        head.appendChild(link);
+
+/*
+        var style = xml.createElement("style");
+        style.textContent = "body { background-color:red; }";
+        head.appendChild(style);
+*/
+        // FIXME: Inject proper <style>
+        // (link rel = stylesheet?)
+
+        // FIXME: Inject <script>
+
+        // FIXME: Split this across several ticks.
+        var source = new XMLSerializer().serializeToString(xml);
+        var encoded = new TextEncoder().encode(source);
+        var blob = new Blob([encoded], { type: "text/html" }); 
+        var url = URL.createObjectURL(blob);
         $("contents").setAttribute("src", url);
+        // FIXME: revokeObjectURL (can we do this immediately?)
       });
+      promise = promise.then(null, e => console.error(e));
     });
   }
 } catch (ex) {
