@@ -13,8 +13,10 @@ var windowWatcher = new SizeWatcher(window);
 var Contents = {
   elt: $("contents"),
   updateDimensions: function() {
+/*
     Contents.elt.style.innerWidth = windowWatcher.innerWidth + "px";
     Contents.elt.style.innerHeight = windowWatcher.innerHeight + "px";
+*/
   },
   init: function() {
     windowWatcher.addObserver("resize", () => Contents.updateDimensions());
@@ -46,31 +48,25 @@ try {
         // Adapt XML document for proper display.
         //
         var head = xml.querySelector("html > head");
-
+        console.log("Chapter init", 1);
         // 1. Inject global book stylesheet
         var link = xml.createElement("link");
         link.setAttribute("rel", "stylesheet");
         link.setAttribute("type", "text/css");
-        link.setAttribute("href", UrlUtils.toURL("css/books.css"));
+        link.setAttribute("href", UrlUtils.toURL("content/books.css"));
         head.appendChild(link);
 
-        // 2. Inject style data customized for the screen size
-        var paddingY = 20;
-        var updateSize = function() {
-          var body = xml.querySelector("html > body");
-          console.log("Size updated", windowWatcher);
-          body.style.MozColumnWidth = windowWatcher.innerWidth + "px";
-          body.style.MozColumnGap = "40px";
-          body.style.height = (windowWatcher.innerHeight - 2 * paddingY) + "px";
-          console.log("Body", body.style.height);
-        };
-        updateSize();
-        windowWatcher.addObserver("resize", updateSize);
-        // FIXME: Add WebKit (and other) equivalents
+        // 2. Inject global book script
+        var script = xml.createElement("script");
+        script.setAttribute("type", "text/javascript");
+        script.setAttribute("src", UrlUtils.toURL("content/script.js"));
+        script.textContent = "// Nothing to see";
+        head.appendChild(script);
 
-        // FIXME: Do we need to inject <script>?
-        // FIXME: We probably want to rewrite all links
-        // (for images, stylesheets, etc.)
+        // 3. Rewrite internal links
+        // (scripts, stylesheets, etc.)
+        // FIXME: TODO
+
         return xml;
       });
       promise = promise.then(xml => {
