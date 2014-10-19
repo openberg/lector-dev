@@ -1,22 +1,23 @@
 window.require(['js/observable',
                 'js/book',
                 'js/urlutils',
-                'js/window'],
-  function(Observable, Book, UrlUtils, Window) {
+                'js/sizewatcher'],
+  function(Observable, Book, UrlUtils, SizeWatcher) {
 "use strict";
 
 // FIXME: Populate list of previously read books/bookmarks
 
 var $ = id => document.getElementById(id);
+var windowWatcher = new SizeWatcher(window);
 
 var Contents = {
   elt: $("contents"),
   updateDimensions: function() {
-    Contents.elt.style.innerWidth = Window.innerWidth + "px";
-    Contents.elt.style.innerHeight = Window.innerHeight + "px";
+    Contents.elt.style.innerWidth = windowWatcher.innerWidth + "px";
+    Contents.elt.style.innerHeight = windowWatcher.innerHeight + "px";
   },
   init: function() {
-    Window.addObserver("resize", () => Contents.updateDimensions());
+    windowWatcher.addObserver("resize", () => Contents.updateDimensions());
     Contents.updateDimensions();
   },
 };
@@ -45,7 +46,6 @@ try {
         // Adapt XML document for proper display.
         //
         var head = xml.querySelector("html > head");
-        var body = xml.querySelector("html > body");
 
         // 1. Inject global book stylesheet
         var link = xml.createElement("link");
@@ -55,15 +55,18 @@ try {
         head.appendChild(link);
 
         // 2. Inject style data customized for the screen size
-        console.log("MozColumnWidth", Window.innerWidth + "px");
-        body.style.MozColumnWidth = Window.innerWidth + "px";
-        body.style.MozColumnGap = "40px";
-        body.style.height = Window.innerHeight + "px";
-        console.log("MozColumnWidth", Window.innerWidth + "px");
-        console.log("height", Window.innerHeight + "px");
-
+        var paddingY = 20;
+        var updateSize = function() {
+          var body = xml.querySelector("html > body");
+          console.log("Size updated", windowWatcher);
+          body.style.MozColumnWidth = windowWatcher.innerWidth + "px";
+          body.style.MozColumnGap = "40px";
+          body.style.height = (windowWatcher.innerHeight - 2 * paddingY) + "px";
+          console.log("Body", body.style.height);
+        };
+        updateSize();
+        windowWatcher.addObserver("resize", updateSize);
         // FIXME: Add WebKit (and other) equivalents
-        // FIXME: Adapt when screen changes,
 
         // FIXME: Do we need to inject <script>?
         // FIXME: We probably want to rewrite all links
@@ -94,6 +97,7 @@ try {
  * The file picker.
  */
 
+/*
 var filePicker = new Observable(["open"]);
 filePicker.eltControl = document.getElementById("pick_file_control");
 filePicker.eltTab = document.getElementById("pick_file");
@@ -125,5 +129,6 @@ filePicker.addObserver("open", e => {
     console.log("Chapters", book.chapters);
   });
 });
+*/
 
 });
