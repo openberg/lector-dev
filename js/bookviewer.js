@@ -124,6 +124,14 @@ BookViewer.prototype = {
       }
       for (var img of xml.querySelectorAll("html > body img")) {
         generateLink(img, "src");
+        // Nicety hack: images with width="100%" or height="100%" are bound
+        // to break. Let's get rid of thes attributes.
+        if (img.getAttribute("width") == "100%") {
+          img.removeAttribute("width");
+        }
+        if (img.getAttribute("height") == "100%") {
+          img.removeAttribute("height");
+        }
       }
       for (var iframe of xml.querySelectorAll("html > body iframe")) {
         generateLink(iframe, "src");
