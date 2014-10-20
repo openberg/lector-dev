@@ -10,7 +10,13 @@ var $ = id => document.getElementById(id);
 var windowWatcher = new SizeWatcher(window);
 var bookViewer = new BookViewer($("contents"));
 
+bookViewer.addObserver("pagechange", function(event) {
+  console.log("Moved to page", event);
+});
 
+//
+// Load a book passed as URL.
+//
 var params = new URL(window.location).searchParams;
 console.log(params);
 try {

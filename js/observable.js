@@ -15,13 +15,21 @@ window.define(function() {
   }
   Observable.prototype = {
     addObserver: function(event, observer) {
-      this._observers.get(event).add(observer);
+      var observers = this._observers.get(event);
+      if (!observers) {
+        throw new TypeError("Incorrect event: " + event);
+      }
+      observers.add(observer);
     },
     removeObserver: function(event, observer) {
       this._observers.get(event).delete(observer);    
     },
     notify: function(event, value) {
-      for (var observer of this._observers.get(event)) {
+      var observers = this._observers.get(event);
+      if (!observers) {
+        throw new TypeError("Incorrect event: " + event);
+      }
+      for (var observer of observers) {
         try {
           observer(value);
         } catch(ex if console.error(ex)) {

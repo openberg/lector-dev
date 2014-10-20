@@ -7,6 +7,10 @@ define(['js/book',
 /**
  * A component designed to display the contents of a book.
  *
+ * @extends {Observable} Instances of BookViewer notify of the following
+ * events:
+ * - pagechange ({page: number, lastPage:number}) The page being displayed.
+ *    Numbering is relative to the current layout of the current chapter.
  * @param {Element} element The element in which to display the book.
  * It should generally by a `div`.
  */
@@ -14,7 +18,7 @@ function BookViewer(element) {
   if (!(element instanceof Element)) {
     throw new TypeError("Expected an instance of Element");
   }
-  Observable.call(this, ["pagechage"]);
+  Observable.call(this, ["pagechange"]);
 
   /**
    * The element in which to display the book.
@@ -24,7 +28,6 @@ function BookViewer(element) {
   this._iframe = document.createElement("iframe");
   this._iframe.classList.add("bookviewer");
   this._iframe.setAttribute("scrolling", "no");
-  this._iframe.addEventListener("load", () => this.notifyObservers("pagechange"));
   element.appendChild(this._iframe);
 
   /**
@@ -68,7 +71,6 @@ BookViewer.prototype.open = function(book) {
  */
 BookViewer.prototype.changePageBy = function(delta) {
   this._iframe.contentWindow.postMessage({method: "scrollBy", args:[delta]}, "*");
-  this.notifyObservers("pagechange");
 },
 
 /**
@@ -112,13 +114,14 @@ BookViewer.prototype.navigateTo = function(chapter, endOfChapter) {
     injectLink.setAttribute("href", UrlUtils.toURL("content/books.css"));
     head.appendChild(injectLink);
 
-    // 2. Inject global book script
+    // 2. Inject global book scripts
     var injectScript = xml.createElement("script");
     injectScript.setAttribute("type", "text/javascript");
     injectScript.setAttribute("src", UrlUtils.toURL("content/script.js"));
     injectScript.textContent = "// Nothing to see"; // Workaround serializer bug
     head.appendChild(injectScript);
 
+    var injectScript2;
     if (endOfChapter) {
       // Go to the end of the chapter without triggering an animation
       // that goes through all pages of the chapter.
@@ -126,11 +129,15 @@ BookViewer.prototype.navigateTo = function(chapter, endOfChapter) {
       injectStyle.textContent = "body { transform: translateX(1000000px); transition-property: '';}";
       head.appendChild(injectStyle);
 
-      var injectScript2 = xml.createElement("script");
+      injectScript2 = xml.createElement("script");
       injectScript2.setAttribute("type", "text/javascript");
       injectScript2.textContent = "window.addEventListener('load', function() {document.body.transitionProperty = 'transform'; window.Lector.scrollToPage(Infinity)});";
-      head.appendChild(injectScript2);
+    } else {
+      injectScript2 = xml.createElement("script");
+      injectScript2.setAttribute("type", "text/javascript");
+      injectScript2.textContent = "window.addEventListener('load', function() {window.Lector.scrollToPage(0);});";
     }
+    head.appendChild(injectScript2);
 
     // 3. Rewrite internal links
     // (scripts, stylesheets, etc.)
@@ -269,7 +276,11 @@ BookViewer.prototype._handleMessage = function(e) {
   case "changeChapterBy":
     this.changeChapterBy(data.args[0]);
     break;
+  case "pagechange":
+    this.notify("pagechange", data.args[0]);
+    break;
   default:
+    console.error("Unknwon message", data.method);
     return;
   }
 };

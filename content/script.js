@@ -96,18 +96,19 @@ window.addEventListener("message", function(e) {
 function scrollToPosition(position, animate) {
   var translation = "translateX(" + (-1 * position) + "px)";
   console.log("Translation", translation);
-  document.body.style.transform = translation;  
+  document.body.style.transform = translation;
 }
 
 function scrollToPage(where) {
   console.log("scrollToPage", where);
   var width = window.innerWidth + columnGap;
+  var scrollMaxX = document.body.scrollWidth;
+  var lastPage = Math.floor(scrollMaxX / width);
   if (where == Infinity) {
-    var scrollMaxX = document.body.scrollWidth;
-    where = Math.floor(scrollMaxX / width) - 1;
-    console.log("Need to scroll to the last page", scrollMaxX, where);
+    where = lastPage;
   }
   currentPage = where;
+  window.parent.postMessage({method: "pagechange", args:[{page: where, lastPage: lastPage}]}, "*");
   scrollToPosition(currentPage * width);
 }
 
@@ -122,7 +123,7 @@ function scrollBy(delta) {
     window.parent.postMessage({method: "changeChapterBy", args: [-1]}, "*");
     return;
   } else if (nextPage * width >= scrollMaxX) {
-    window.parent.postMessage({method: "chapterBy", args: [1]}, "*");
+    window.parent.postMessage({method: "changeChapterBy", args: [1]}, "*");
     return;
   }
   scrollToPage(nextPage);
