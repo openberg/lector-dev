@@ -76,36 +76,56 @@ window.addEventListener("keypress", function(e) {
   }
 });
 
-////////////
+/////////////
+// Navigation
 //
-//
+
 window.addEventListener("message", function(e) {
   switch (e.data.method) {
     case "scrollBy":
       scrollBy(e.data.args[0]);
+      break;
+    case "scrollToPage":
+      scrollToPage(e.data.args[0]);
       break;
     default:
       break;
   }
 });
 
-function scrollBy(delta) {
+function scrollToPosition(position, animate) {
+  var translation = "translateX(" + (-1 * position) + "px)";
+  console.log("Translation", translation);
+  document.body.style.transform = translation;  
+}
+
+function scrollToPage(where) {
+  console.log("scrollToPage", where);
   var width = window.innerWidth + columnGap;
+  if (where == Infinity) {
+    var scrollMaxX = document.body.scrollWidth;
+    where = Math.floor(scrollMaxX / width) - 1;
+    console.log("Need to scroll to the last page", scrollMaxX, where);
+  }
+  currentPage = where;
+  scrollToPosition(currentPage * width);
+}
+
+window.Lector.scrollToPage = scrollToPage;
+
+function scrollBy(delta) {
   var scrollMaxX = document.body.scrollWidth;
   var nextPage = currentPage + delta;
-  console.log("scrollBy", document.body, scrollMaxX);
+  var width = window.innerWidth + columnGap;
   if (nextPage < 0) {
-    // FIXME: TODO
+    console.log("Next page is < 0");
+    window.parent.postMessage({method: "chapterBy", args: [-1]}, "*");
     return;
   } else if (nextPage * width >= scrollMaxX) {
-    console.log("That's past the end of the chapter", nextPage * width);
+    window.parent.postMessage({method: "chapterBy", args: [1]}, "*");
     return;
   }
-  // FIXME: Animate
-  var translation = "translateX(" + (-1 * nextPage * width) + "px)";
-  currentPage = nextPage;
-  console.log("Translation", translation);
-  document.body.style.transform = translation;
+  scrollToPage(nextPage);
 }
 
 })();

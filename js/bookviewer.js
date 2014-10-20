@@ -28,6 +28,7 @@ function BookViewer(element) {
    * The book currently displayed.
    */
   this._book = null;
+  this._currentChapter = null;
 
   /**
    * Resources generated to load this chapter.
@@ -72,7 +73,7 @@ BookViewer.prototype = {
    * in the book.
    * @return {Promise} A Promise fulfilled once navigation is complete.
    */
-  navigateTo: function(chapter) {
+  navigateTo: function(chapter, endOfChapter) {
     if (typeof chapter != "number" && typeof chapter != "string") {
       throw new TypeError("Expected a number");
     }
@@ -87,6 +88,7 @@ BookViewer.prototype = {
       if (!entry) {
         throw new Error("Could not find chapter " + chapter);
       }
+      this._currentChapter = entry;
       return entry.asXML();
     });
     promise = promise.then(xml => {
@@ -108,6 +110,17 @@ BookViewer.prototype = {
       injectScript.setAttribute("src", UrlUtils.toURL("content/script.js"));
       injectScript.textContent = "// Nothing to see"; // Workaround serializer bug
       head.appendChild(injectScript);
+
+      if (endOfChapter) {
+        var injectStyle = xml.createElement("style");
+        injectStyle.textContent = "body { transform: translateX(1000000px); transition-property: '';}";
+        head.appendChild(injectStyle);
+
+        var injectScript2 = xml.createElement("script");
+        injectScript2.setAttribute("type", "text/javascript");
+        injectScript2.textContent = "window.addEventListener('load', function() {document.body.transitionProperty = 'transform'; window.Lector.scrollToPage(Infinity)});";
+        head.appendChild(injectScript2);
+      }
 
       // 3. Rewrite internal links
       // (scripts, stylesheets, etc.)
@@ -199,6 +212,20 @@ BookViewer.prototype = {
     });
   },
 
+  navigateBy: function(delta) {
+    console.log("navigateBy", delta);
+    var promise = new Promise(resolve => resolve(this._book.chapters));
+    promise = promise.then(chapters => {
+      for (var i = 0; i < chapters.length; ++i) {
+        console.log("Comparing", chapters[i], this._currentChapter);
+        if (chapters[i] == this._currentChapter) {
+          return this.navigateTo(i + delta, delta == -1);
+        }
+      }
+      throw new Error("Could not find chapter");
+    });
+  },
+
   /**
    * Revoke any object URL that may have been left in memory by the previous load.
    */
@@ -219,10 +246,14 @@ BookViewer.prototype = {
       break;
     case "unload":
       console.log("Unloading document, need to revoke urls");
-      this._cleanup();
+//      this._cleanup();
+// FIXME: Need to associate cleanup to a specific document
       break;
     case "keyboardNavigation":
       this._keyboardNavigation(data.args[0]);
+      break;
+    case "chapterBy":
+      this.navigateBy(data.args[0]);
       break;
     default:
       return;
