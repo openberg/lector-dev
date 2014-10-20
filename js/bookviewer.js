@@ -38,6 +38,7 @@ function BookViewer(element) {
 
   // Handle messages sent from the book itself.
   window.addEventListener("message", e => this._handleMessage(e));
+  window.addEventListener("keypress", e => this._handleKeyPress(e));
 }
 BookViewer.prototype = {
   /**
@@ -55,7 +56,11 @@ BookViewer.prototype = {
       throw new TypeError("Expected a Book, URL or File, got " + book);
     }
     this._cleanup();
-    return book.init();
+    return this._book.init();
+  },
+
+  changePage: function(delta) {
+    this._iframe.contentWindow.postMessage({method: "scrollBy", args:[delta]}, "*");
   },
 
   /**
@@ -216,10 +221,51 @@ BookViewer.prototype = {
       console.log("Unloading document, need to revoke urls");
       this._cleanup();
       break;
+    case "keyboardNavigation":
+      this._keyboardNavigation(data.args[0]);
+      break;
     default:
       return;
     }
-  }
+  },
+
+  _handleKeyPress: function(e) {
+    switch (e.code) {
+      case "ArrowLeft":
+      case "ArrowUp":
+      case "Left":
+      case "Space":
+      case "ArrowDown":
+      case "ArrowRight":
+      case "Right":
+      case "Backspace":
+        e.preventDefault();
+        e.stopPropagation();
+        this._keyboardNavigation(e.code);
+      default:
+        break;
+    }
+  },
+
+  _keyboardNavigation: function(code) {
+    console.log("Keyboard navigation", code);
+    switch (code) {
+      case "Left":
+      case "ArrowLeft":
+      case "ArrowUp":
+      case "Space":
+        this.changePage(-1);
+        break;
+      case "Right":
+      case "ArrowRight":
+      case "ArrowDown":
+      case "Backspace":
+        this.changePage(1);
+        break;
+      default:
+        break;
+    }
+  },
 };
 
 return BookViewer;

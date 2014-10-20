@@ -23,7 +23,6 @@ function append(url, string) {
   if (!(url instanceof URL)) {
     throw new TypeError();
   }
-  console.log("Append", url, string);
   url = new URL(url.href);
   url.href = url.href.substring(0, url.href.length - url.search.length);
   if (!url.href.endsWith("/")) {

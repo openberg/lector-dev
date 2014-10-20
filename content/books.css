@@ -12,4 +12,5 @@ body {
     -webkit-column-fill: auto;
     -webkit-column-gap: 40px;
     text-align: justify;
+    transition: transform .3s;
 }
