@@ -3,14 +3,10 @@ html, body {
     height: 100%;
     margin: 0;
     padding: 0;
+    max-width: none;
 }
 
 body {
-/*    -webkit-column-fill: auto;
-    -webkit-column-gap: 40px;
-    -moz-column-width: 300px;
-    -moz-column-gap: 40px;
-    height: 120px;*/
     -moz-column-fill: auto;
     -moz-column-gap: 40px;
     -webkit-column-fill: auto;

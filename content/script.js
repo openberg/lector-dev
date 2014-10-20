@@ -1,6 +1,12 @@
 (function() {
 "use strict";
 
+window.Lector = {};
+
+
+///////////////
+// Adapting column size
+//
 
 function setupColumns() {
   var innerWidth = window.innerWidth;
@@ -23,5 +29,26 @@ window.addEventListener("DOMContentLoaded", function observer() {
   setupColumns();
   window.removeEventListener("DOMContentLoaded", observer);
 });
+
+
+///////////////
+// Communicating with the parent window
+//
+
+window.Lector.goto = function(href) {
+  var message = {method:"goto", args:[href]};
+  window.parent.postMessage(message, "*");
+};
+
+///////////////
+// Garbage-collecting urls
+//
+
+window.addEventListener("unload", function() {
+  console.log("Unloading frame");
+  window.parent.postMessage({method: "unload"}, "*");
+});
+
+
 
 })();

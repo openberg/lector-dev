@@ -1,14 +1,16 @@
-window.require(['js/observable',
-                'js/book',
-                'js/urlutils',
-                'js/sizewatcher'],
-  function(Observable, Book, UrlUtils, SizeWatcher) {
+window.require(['js/book',
+                'js/bookviewer',
+                'js/observable',
+                'js/sizewatcher',
+                'js/urlutils'],
+  function(Book, BookViewer, Observable, SizeWatcher, UrlUtils) {
 "use strict";
 
 // FIXME: Populate list of previously read books/bookmarks
 
 var $ = id => document.getElementById(id);
 var windowWatcher = new SizeWatcher(window);
+var bookViewer = new BookViewer($("contents"));
 
 var Contents = {
   elt: $("contents"),
@@ -25,6 +27,24 @@ var Contents = {
 };
 Contents.init();
 
+window.addEventListener("message", function(e) {
+  console.log("Parent", "receiving message", e);
+  // FIXME: Filter on the source of e.
+  var data = e.data;
+  switch(data.method) {
+    case "goto":
+      console.log("Attempting to navigate to resource: " + data.args[0]);
+      // FIXME: Implement navigation
+      break;
+    case "unload":
+      console.log("Unloading document, need to revoke urls");
+      // FIXME: Implement revokation
+      break;
+    default:
+      return;
+  }
+});
+
 var params = new URL(window.location).searchParams;
 console.log(params);
 try {
@@ -39,50 +59,11 @@ try {
     if (params.has("chapter")) {
       chapterNum = Number.parseInt(params.get("chapter"));
     }
-    book.init().then(() => {
-      console.log("Book is initialized", book.title, book.author);
-      console.log("Chapters", book.chapters);
-      var promise = book.chapters[chapterNum].asXML();
-      promise = promise.then(xml => {
-        //
-        // Adapt XML document for proper display.
-        //
-        var head = xml.querySelector("html > head");
-        console.log("Chapter init", 1);
-        // 1. Inject global book stylesheet
-        var link = xml.createElement("link");
-        link.setAttribute("rel", "stylesheet");
-        link.setAttribute("type", "text/css");
-        link.setAttribute("href", UrlUtils.toURL("content/books.css"));
-        head.appendChild(link);
-
-        // 2. Inject global book script
-        var script = xml.createElement("script");
-        script.setAttribute("type", "text/javascript");
-        script.setAttribute("src", UrlUtils.toURL("content/script.js"));
-        script.textContent = "// Nothing to see";
-        head.appendChild(script);
-
-        // 3. Rewrite internal links
-        // (scripts, stylesheets, etc.)
-        // FIXME: TODO
-
-        return xml;
-      });
-      promise = promise.then(xml => {
-        return Promise.resolve(new XMLSerializer().serializeToString(xml));
-      });
-      promise = promise.then(source => {
-        return Promise.resolve(new TextEncoder().encode(source));
-      });
-      promise = promise.then(encoded => {
-        var blob = new Blob([encoded], { type: "text/html" }); 
-        var url = URL.createObjectURL(blob);
-        $("contents").setAttribute("src", url);
-        URL.revokeObjectURL(url);
-      });
-      promise = promise.then(null, e => console.error(e));
-    });
+    var promise = bookViewer.open(book);
+    promise = promise.then(() =>
+      bookViewer.navigateTo(chapterNum)
+    );
+    promise = promise.then(null, e => console.error(e));
   }
 } catch (ex) {
   console.error(ex);

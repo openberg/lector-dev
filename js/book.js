@@ -126,6 +126,10 @@ Book.prototype = {
     this._ensureInitialized();
     return this._chapters;
   },
+
+  getResourceFor: function(resource, document) {
+    return this._archive.entries.get(resource);
+  },
 };
 
 
