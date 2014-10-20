@@ -3,13 +3,24 @@ define(['js/book',
   function(Book, UrlUtils) {
 "use strict";
 
-
+/**
+ * A component designed to display the contents of a book.
+ *
+ * @param {Element} element The element in which to display the book.
+ */
 function BookViewer(element) {
   if (!(element instanceof Element)) {
     throw new TypeError("Expected an instance of Element");
   }
   this._element = element;
   this._book = null;
+
+  /**
+   * Resources generated to load this chapter.
+   *
+   * @type {Array<URL>}
+   */
+  this._chapterResources = [];
   window.addEventListener("message", e => this._handleMessage(e));
 }
 BookViewer.prototype = {
@@ -61,7 +72,7 @@ BookViewer.prototype = {
 
       // 3. Rewrite internal links
       // (scripts, stylesheets, etc.)
-      var blockers = [];
+      var resources = [];
       var generateLink = (node, attribute) => {
         var href = node.getAttribute(attribute);
         console.log("Generating link for", node, attribute, href);
@@ -86,8 +97,9 @@ BookViewer.prototype = {
         var promise = resource.asObjectURL();
         promise = promise.then(url => {
           node.setAttribute(attribute, url);
+          return url;
         });
-        blockers.push(promise);
+        resources.push(promise);
       };
       for (var link of xml.querySelectorAll("html > head > link")) {
         if (link.getAttribute("rel") != "stylesheet") {
@@ -117,7 +129,14 @@ BookViewer.prototype = {
         a.setAttribute("href", "javascript:window.Lector.goto('" + href + "');");
       }
 
-      return Promise.all(blockers).then(() => xml);
+      return Promise.all(resources).then(resources => {
+        console.log("All resources are now available", resources);
+        if (this._chapterResources.length != 0) {
+          this._cleanup();
+        }
+        this._chapterResources = resources;
+        return Promise.resolve(xml);
+      });
     });
     promise = promise.then(xml => {
       return Promise.resolve(new XMLSerializer().serializeToString(xml));
@@ -133,18 +152,27 @@ BookViewer.prototype = {
     });
   },
 
+  /**
+   * Revoke any object URL that may have been left in memory by the previous load.
+   */
+  _cleanup: function() {
+    for (var url of this._chapterResources) {
+      console.log("Revoking", url);
+      URL.revokeObjectURL(url);
+    }
+  },
+
   _handleMessage: function(e) {
     console.log("BookViewer", "receiving message", e);
     // FIXME: Filter on the source of e.
     var data = e.data;
     switch(data.method) {
     case "goto":
-      console.log("Attempting to navigate to resource: " + data.args[0]);
       this.navigateTo(data.args[0]);
       break;
     case "unload":
       console.log("Unloading document, need to revoke urls");
-      // FIXME: Implement revokation
+      this._cleanup();
       break;
     default:
       return;
