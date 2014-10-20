@@ -119,7 +119,7 @@ function scrollBy(delta) {
   var width = window.innerWidth + columnGap;
   if (nextPage < 0) {
     console.log("Next page is < 0");
-    window.parent.postMessage({method: "chapterBy", args: [-1]}, "*");
+    window.parent.postMessage({method: "changeChapterBy", args: [-1]}, "*");
     return;
   } else if (nextPage * width >= scrollMaxX) {
     window.parent.postMessage({method: "chapterBy", args: [1]}, "*");
