@@ -6,26 +6,9 @@ window.require(['js/book',
   function(Book, BookViewer, Observable, SizeWatcher, UrlUtils) {
 "use strict";
 
-// FIXME: Populate list of previously read books/bookmarks
-
 var $ = id => document.getElementById(id);
 var windowWatcher = new SizeWatcher(window);
 var bookViewer = new BookViewer($("contents"));
-
-var Contents = {
-  elt: $("contents"),
-  updateDimensions: function() {
-/*
-    Contents.elt.style.innerWidth = windowWatcher.innerWidth + "px";
-    Contents.elt.style.innerHeight = windowWatcher.innerHeight + "px";
-*/
-  },
-  init: function() {
-    windowWatcher.addObserver("resize", () => Contents.updateDimensions());
-    Contents.updateDimensions();
-  },
-};
-Contents.init();
 
 
 var params = new URL(window.location).searchParams;

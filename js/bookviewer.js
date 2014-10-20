@@ -7,12 +7,25 @@ define(['js/book',
  * A component designed to display the contents of a book.
  *
  * @param {Element} element The element in which to display the book.
+ * It should generally by a `div`.
  */
 function BookViewer(element) {
   if (!(element instanceof Element)) {
     throw new TypeError("Expected an instance of Element");
   }
-  this._element = element;
+
+  /**
+   * The element in which to display the book.
+   *
+   * @type {Element}
+   */
+  this._iframe = document.createElement("iframe");
+  this._iframe.classList.add("bookviewer");
+  element.appendChild(this._iframe);
+
+  /**
+   * The book currently displayed.
+   */
   this._book = null;
 
   /**
@@ -21,6 +34,8 @@ function BookViewer(element) {
    * @type {Array<URL>}
    */
   this._chapterResources = [];
+
+  // Handle messages sent from the book itself.
   window.addEventListener("message", e => this._handleMessage(e));
 }
 BookViewer.prototype = {
@@ -147,7 +162,7 @@ BookViewer.prototype = {
     promise = promise.then(encoded => {
       var blob = new Blob([encoded], { type: "text/html" }); 
       var url = URL.createObjectURL(blob);
-      this._element.setAttribute("src", url);
+      this._iframe.setAttribute("src", url);
       URL.revokeObjectURL(url);
     });
   },
