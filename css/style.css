@@ -15,3 +15,18 @@ html, body {
     overflow: hidden;
     margin: none;
 }
+
+
+.arrow {
+    position: absolute;
+    bottom: 0;
+    z-index: 5;
+}
+
+.left {
+    left: 0;
+}
+
+.right {
+    right: 0;
+}

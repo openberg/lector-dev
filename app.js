@@ -10,6 +10,14 @@ var $ = id => document.getElementById(id);
 var windowWatcher = new SizeWatcher(window);
 var bookViewer = new BookViewer($("contents"));
 
+$("arrow_left").addEventListener("click", function() {
+  bookViewer.changePageBy(-1);
+});
+
+$("arrow_right").addEventListener("click", function() {
+  bookViewer.changePageBy(1);
+});
+
 bookViewer.addObserver("pagechange", function(event) {
   console.log("Moved to page", event);
 });
