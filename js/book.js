@@ -127,7 +127,7 @@ Book.prototype = {
     return this._chapters;
   },
 
-  getResourceFor: function(resource, document) {
+  getResource: function(resource) {
     return this._archive.entries.get(resource);
   },
 };

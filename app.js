@@ -27,23 +27,6 @@ var Contents = {
 };
 Contents.init();
 
-window.addEventListener("message", function(e) {
-  console.log("Parent", "receiving message", e);
-  // FIXME: Filter on the source of e.
-  var data = e.data;
-  switch(data.method) {
-    case "goto":
-      console.log("Attempting to navigate to resource: " + data.args[0]);
-      // FIXME: Implement navigation
-      break;
-    case "unload":
-      console.log("Unloading document, need to revoke urls");
-      // FIXME: Implement revokation
-      break;
-    default:
-      return;
-  }
-});
 
 var params = new URL(window.location).searchParams;
 console.log(params);

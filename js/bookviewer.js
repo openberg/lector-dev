@@ -3,12 +3,14 @@ define(['js/book',
   function(Book, UrlUtils) {
 "use strict";
 
+
 function BookViewer(element) {
   if (!(element instanceof Element)) {
     throw new TypeError("Expected an instance of Element");
   }
   this._element = element;
   this._book = null;
+  window.addEventListener("message", e => this._handleMessage(e));
 }
 BookViewer.prototype = {
   open: function(book) {
@@ -21,11 +23,22 @@ BookViewer.prototype = {
   },
   navigateTo: function(chapter) {
     console.log("BookViewer", "navigating to", chapter);
-    if (typeof chapter != "number") {
+    if (typeof chapter != "number" && typeof chapter != "string") {
       throw new TypeError("Expected a number");
     }
     var promise = this._book.init();
-    promise = promise.then(() => this._book.chapters[chapter].asXML());
+    promise = promise.then(() => {
+      var entry;
+      if (typeof chapter == "number") {
+        entry = this._book.chapters[chapter];
+      } else {
+        entry = this._book.getResource(chapter);
+      }
+      if (!entry) {
+        throw new Error("Could not find chapter " + chapter);
+      }
+      return entry.asXML();
+    });
     promise = promise.then(xml => {
       //
       // Adapt XML document for proper display.
@@ -65,7 +78,7 @@ BookViewer.prototype = {
           // Link is relative, we need to rewrite it and generate
           // a URL for its contents.
         }
-        var resource = this._book.getResourceFor(href);
+        var resource = this._book.getResource(href);
         if (!resource) {
           console.log("Could not find resource for", resource);
           return;
@@ -118,6 +131,24 @@ BookViewer.prototype = {
       this._element.setAttribute("src", url);
       URL.revokeObjectURL(url);
     });
+  },
+
+  _handleMessage: function(e) {
+    console.log("BookViewer", "receiving message", e);
+    // FIXME: Filter on the source of e.
+    var data = e.data;
+    switch(data.method) {
+    case "goto":
+      console.log("Attempting to navigate to resource: " + data.args[0]);
+      this.navigateTo(data.args[0]);
+      break;
+    case "unload":
+      console.log("Unloading document, need to revoke urls");
+      // FIXME: Implement revokation
+      break;
+    default:
+      return;
+    }
   }
 };
 
