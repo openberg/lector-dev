@@ -14,6 +14,7 @@ function BookViewer(element) {
   if (!(element instanceof Element)) {
     throw new TypeError("Expected an instance of Element");
   }
+  Observable.call(this, ["pagechage"]);
 
   /**
    * The element in which to display the book.
@@ -23,6 +24,7 @@ function BookViewer(element) {
   this._iframe = document.createElement("iframe");
   this._iframe.classList.add("bookviewer");
   this._iframe.setAttribute("scrolling", "no");
+  this._iframe.addEventListener("load", () => this.notifyObservers("pagechange"));
   element.appendChild(this._iframe);
 
   /**
@@ -66,6 +68,7 @@ BookViewer.prototype.open = function(book) {
  */
 BookViewer.prototype.changePageBy = function(delta) {
   this._iframe.contentWindow.postMessage({method: "scrollBy", args:[delta]}, "*");
+  this.notifyObservers("pagechange");
 },
 
 /**
@@ -117,6 +120,8 @@ BookViewer.prototype.navigateTo = function(chapter, endOfChapter) {
     head.appendChild(injectScript);
 
     if (endOfChapter) {
+      // Go to the end of the chapter without triggering an animation
+      // that goes through all pages of the chapter.
       var injectStyle = xml.createElement("style");
       injectStyle.textContent = "body { transform: translateX(1000000px); transition-property: '';}";
       head.appendChild(injectStyle);
