@@ -40,16 +40,34 @@ function BookViewer(element) {
   window.addEventListener("message", e => this._handleMessage(e));
 }
 BookViewer.prototype = {
+  /**
+   * Open a book.
+   */
   open: function(book) {
     console.log("BookViewer", "opening book", book);
-    if (!(book instanceof Book)) {
-      throw new TypeError("Expected a book");
+    if (book instanceof Book) {
+      this._book = book;
+    } else if (book instanceof window.URL) {
+      this._book = new Book(book);
+    } else if (book instanceof window.File) {
+      this._book = new Book(book);
+    } else {
+      throw new TypeError("Expected a Book, URL or File, got " + book);
     }
-    this._book = book;
+    this._cleanup();
     return book.init();
   },
+
+  /**
+   * Navigate to a chapter.
+   *
+   * @param {string|number} chapter If a number, navigate to the
+   * chapter with this number in the table of contents of the book.
+   * If a string, navigate to the chapter contained at that path
+   * in the book.
+   * @return {Promise} A Promise fulfilled once navigation is complete.
+   */
   navigateTo: function(chapter) {
-    console.log("BookViewer", "navigating to", chapter);
     if (typeof chapter != "number" && typeof chapter != "string") {
       throw new TypeError("Expected a number");
     }

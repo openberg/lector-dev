@@ -20,12 +20,11 @@ try {
   }
 
   if (bookURL) {
-    var book = new Book(bookURL);
     var chapterNum = 0;
     if (params.has("chapter")) {
       chapterNum = Number.parseInt(params.get("chapter"));
     }
-    var promise = bookViewer.open(book);
+    var promise = bookViewer.open(bookURL);
     promise = promise.then(() =>
       bookViewer.navigateTo(chapterNum)
     );
