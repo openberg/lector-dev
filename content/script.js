@@ -47,7 +47,7 @@ window.Lector.goto = function(href) {
 //
 
 window.addEventListener("unload", function() {
-  window.parent.postMessage({method: "unload"}, "*");
+  window.parent.postMessage({method: "unload", args:[window.location.href]}, "*");
 });
 
 //////////////

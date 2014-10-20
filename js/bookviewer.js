@@ -30,12 +30,7 @@ function BookViewer(element) {
   this._book = null;
   this._currentChapter = null;
 
-  /**
-   * Resources generated to load this chapter.
-   *
-   * @type {Array<URL>}
-   */
-  this._chapterResources = [];
+  this._resourcesByChapter = new Map();
 
   // Handle messages sent from the book itself.
   window.addEventListener("message", e => this._handleMessage(e));
@@ -56,7 +51,6 @@ BookViewer.prototype = {
     } else {
       throw new TypeError("Expected a Book, URL or File, got " + book);
     }
-    this._cleanup();
     return this._book.init();
   },
 
@@ -78,6 +72,7 @@ BookViewer.prototype = {
       throw new TypeError("Expected a number");
     }
     var promise = this._book.init();
+    var chapterResources = null;
     promise = promise.then(() => {
       var entry;
       if (typeof chapter == "number") {
@@ -191,10 +186,7 @@ BookViewer.prototype = {
 
       return Promise.all(resources).then(resources => {
         console.log("All resources are now available", resources);
-        if (this._chapterResources.length != 0) {
-          this._cleanup();
-        }
-        this._chapterResources = resources;
+        chapterResources = resources;
         return Promise.resolve(xml);
       });
     });
@@ -207,6 +199,8 @@ BookViewer.prototype = {
     promise = promise.then(encoded => {
       var blob = new Blob([encoded], { type: "text/html" }); 
       var url = URL.createObjectURL(blob);
+      console.log("Associating resources", chapterResources, "to url", url);
+      this._resourcesByChapter.set(url, chapterResources);
       this._iframe.setAttribute("src", url);
       URL.revokeObjectURL(url);
     });
@@ -229,11 +223,13 @@ BookViewer.prototype = {
   /**
    * Revoke any object URL that may have been left in memory by the previous load.
    */
-  _cleanup: function() {
-    for (var url of this._chapterResources) {
+  _cleanup: function(chapterURL) {
+    console.log("Cleaning up resources for chapter", chapterURL);
+    for (var url of this._resourcesByChapter.get(chapterURL)) {
       console.log("Revoking", url);
       URL.revokeObjectURL(url);
     }
+    this._resourcesByChapter.delete(chapterURL);
   },
 
   _handleMessage: function(e) {
@@ -246,8 +242,7 @@ BookViewer.prototype = {
       break;
     case "unload":
       console.log("Unloading document, need to revoke urls");
-//      this._cleanup();
-// FIXME: Need to associate cleanup to a specific document
+      this._cleanup(data.args[0]);
       break;
     case "keyboardNavigation":
       this._keyboardNavigation(data.args[0]);
