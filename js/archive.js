@@ -92,6 +92,8 @@ Archive.prototype = {
 
 /**
  * Representation of an entry in a zip-compressed file.
+ *
+ * @param {zip.zipEntry} The underlying zipEntry.
  */
 var Entry = function(zipEntry) {
   this._zipEntry = zipEntry;
@@ -117,7 +119,7 @@ Entry.prototype = {
    * Do not forget to call `URL.revokeObjectURL` to revoke this URL
    * once it is not needed anymore.
    *
-   * @return Promise<URL>
+   * @return Promise<string>
    */
   asObjectURL: function() {
     var promise = new Promise(resolve =>
@@ -127,6 +129,9 @@ Entry.prototype = {
     return promise;
   },
 
+  /**
+   * Return a shared object that may be used to 
+   */
   asCachedEntry: function(key) {
     if (this._cachedEntry) {
       this._cachedEntry.acquire(key);
@@ -163,6 +168,16 @@ Entry.prototype = {
   },
 };
 
+/**
+ * Cached data
+ *
+ * Values of this type may be acquired and released. The underlying
+ * value is kept in memory until all its users have released it, plus
+ * a grace period during which other users may still acquire it. This
+ * is useful for e.g. styles, background images, bulletpoints, etc.
+ *
+ * In most cases, you should use this instead of a raw `Entry`.
+ */
 function CachedEntry(entry) {
   this._promiseURL = entry.asObjectURL();
   this._clients = new Map();
@@ -170,9 +185,24 @@ function CachedEntry(entry) {
   Object.freeze(this);
 }
 CachedEntry.prototype = {
+  /**
+   * Return the entry as an object URL.
+   *
+   * Callers should NOT revoke the object URL themselves. Rather, they should call `release`.
+   *
+   * @return {Promise<string>}
+   */
   asObjectURL: function() {
     return this._promiseURL;
   },
+
+  /**
+   * Become one of the owners of the value.
+   *
+   * This method is called automatically by Entry.asCachedEntry.
+   *
+   * @param {*} key
+   */
   acquire: function(key) {
     var clients = this._clients.get(key);
     if (!clients) {
@@ -181,6 +211,15 @@ CachedEntry.prototype = {
       this._clients.set(key, clients + 1);
     }
   },
+
+  /**
+   * Release ownership on the entry.
+   *
+   * Once the entry has no more owners, it will be deallocated, unless someones reallocates it within
+   * a grace period.
+   *
+   * @param {*} key A key previously passed with `acquire()`.
+   */
   release: function(key) {
     var clients = this._clients.get(key);
     if (clients == null) {
@@ -188,10 +227,12 @@ CachedEntry.prototype = {
     }
     this._clients.set(key, clients - 1);
     if (clients != 1) {
+      console.log("I am not the last client for this entry with", key, this._entry.filename);
       return;
     }
     this._clients.delete(key);
     if (this._clients.size != 0) {
+      console.log("I am not the last client for this entry", this._entry.filename);
       return;
     }
     // Oh, this was the last client.
@@ -200,13 +241,16 @@ CachedEntry.prototype = {
     window.setTimeout(() => {
       if (this._clients.size != 0) {
         // Someone else has acquired this object url, they are now in charge of deallocating it.
+        console.log("Someone has reacquired the url", this._entry.filename);
         return;
       }
+      console.log("Time to release this url once and for all", this._entry.filename);
       this._promiseURL.then(url => URL.revokeObjectURL(url));
       this._entry._cachedEntry = null;
-    }, 1000);
+    }, DELAY_BEFORE_UNLOAD);
   },
 };
+var DELAY_BEFORE_UNLOAD = 1000;
 
 
 return Archive;

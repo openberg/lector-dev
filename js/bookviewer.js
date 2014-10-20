@@ -228,7 +228,7 @@ BookViewer.prototype = {
     console.log("Cleaning up resources for chapter", chapterURL);
     var {key, resources} = this._resourcesByChapter.get(chapterURL);
     for (var object of resources) {
-      console.log("Revoking", object.url);
+      console.log("Revoking", object);
       object.release(key);
     }
     this._resourcesByChapter.delete(chapterURL);
