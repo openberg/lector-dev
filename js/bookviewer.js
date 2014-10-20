@@ -141,10 +141,11 @@ BookViewer.prototype = {
           console.log("Could not find resource for", resource);
           return;
         }
-        var promise = resource.asObjectURL();
+        var entry = resource.asCachedEntry(chapter);
+        var promise = entry.asObjectURL();
         promise = promise.then(url => {
           node.setAttribute(attribute, url);
-          return url;
+          return entry;
         });
         resources.push(promise);
       };
@@ -200,7 +201,7 @@ BookViewer.prototype = {
       var blob = new Blob([encoded], { type: "text/html" }); 
       var url = URL.createObjectURL(blob);
       console.log("Associating resources", chapterResources, "to url", url);
-      this._resourcesByChapter.set(url, chapterResources);
+      this._resourcesByChapter.set(url, { key: chapter, resources: chapterResources});
       this._iframe.setAttribute("src", url);
       URL.revokeObjectURL(url);
     });
@@ -225,9 +226,10 @@ BookViewer.prototype = {
    */
   _cleanup: function(chapterURL) {
     console.log("Cleaning up resources for chapter", chapterURL);
-    for (var url of this._resourcesByChapter.get(chapterURL)) {
-      console.log("Revoking", url);
-      URL.revokeObjectURL(url);
+    var {key, resources} = this._resourcesByChapter.get(chapterURL);
+    for (var object of resources) {
+      console.log("Revoking", object.url);
+      object.release(key);
     }
     this._resourcesByChapter.delete(chapterURL);
   },

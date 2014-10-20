@@ -95,6 +95,7 @@ Archive.prototype = {
  */
 var Entry = function(zipEntry) {
   this._zipEntry = zipEntry;
+  this._cachedEntry = null;
 };
 Entry.prototype = {
   get filename() {
@@ -126,6 +127,16 @@ Entry.prototype = {
     return promise;
   },
 
+  asCachedEntry: function(key) {
+    if (this._cachedEntry) {
+      this._cachedEntry.acquire(key);
+      return this._cachedEntry;
+    }
+    var object = this._cachedEntry = new CachedEntry(this);
+    object.acquire(key);
+    return object;
+  },
+
   /**
    * Parse the entry as a XML document.
    *
@@ -152,6 +163,50 @@ Entry.prototype = {
   },
 };
 
+function CachedEntry(entry) {
+  this._promiseURL = entry.asObjectURL();
+  this._clients = new Map();
+  this._entry = entry;
+  Object.freeze(this);
+}
+CachedEntry.prototype = {
+  asObjectURL: function() {
+    return this._promiseURL;
+  },
+  acquire: function(key) {
+    var clients = this._clients.get(key);
+    if (!clients) {
+      this._clients.set(key, 1);
+    } else {
+      this._clients.set(key, clients + 1);
+    }
+  },
+  release: function(key) {
+    var clients = this._clients.get(key);
+    if (clients == null) {
+      throw new Error("Invalid key: " + key + ", expected one of " + [...this._clients.keys()].join());
+    }
+    this._clients.set(key, clients - 1);
+    if (clients != 1) {
+      return;
+    }
+    this._clients.delete(key);
+    if (this._clients.size != 0) {
+      return;
+    }
+    // Oh, this was the last client.
+    // We may want to remove the object from the cache.
+    // Let's wait a bit, just in case someone immediately needs to read the same resource.
+    window.setTimeout(() => {
+      if (this._clients.size != 0) {
+        // Someone else has acquired this object url, they are now in charge of deallocating it.
+        return;
+      }
+      this._promiseURL.then(url => URL.revokeObjectURL(url));
+      this._entry._cachedEntry = null;
+    }, 1000);
+  },
+};
 
 
 return Archive;
