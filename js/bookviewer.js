@@ -21,6 +21,7 @@ function BookViewer(element) {
    */
   this._iframe = document.createElement("iframe");
   this._iframe.classList.add("bookviewer");
+  this._iframe.setAttribute("scrolling", "no");
   element.appendChild(this._iframe);
 
   /**
