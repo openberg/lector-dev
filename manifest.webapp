@@ -1,0 +1,34 @@
+{
+  "name": "OpenBerg Lector",
+  "developer": {
+    "name": "David Rajchenbach-Teller",
+    "url": "http://lector.yoric.rajtel.name"
+  },
+  "icons": {
+    "60": "/img/icon60.png",
+    "128": "/img/icon128.png",
+    "256": "/img/icon256.png"
+  },
+  "description": "open-source, open-standards e-Book reader.",
+  "launch_path": "/index.html",
+  "default_locale": "en",
+  "type": "web",
+  "activities": {
+    "open": {
+      "filters": {
+        "type": ["application/epub+zip"]
+      },
+      "href": "/index.html?action=open",
+      "disposition": "window",
+      "returnValue": "false"
+    },
+    "view": {
+      "filters": {
+        "type": ["application/epub+zip"]
+      },
+      "href": "/index.html?action=view",
+      "disposition": "window",
+      "returnValue": "false"
+    }
+  }
+}
