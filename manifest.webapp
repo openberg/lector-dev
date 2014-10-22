@@ -1,5 +1,6 @@
 {
   "name": "OpenBerg Lector",
+  "version": "7.0a1",
   "developer": {
     "name": "David Rajchenbach-Teller",
     "url": "http://lector.yoric.rajtel.name"
@@ -10,13 +11,16 @@
     "256": "/img/icon256.png"
   },
   "description": "open-source, open-standards e-Book reader.",
-  "launch_path": "/index.html",
+  "launch_path": "/index.html?book=samples/alice.epub",
   "default_locale": "en",
   "type": "web",
   "activities": {
     "open": {
       "filters": {
-        "type": ["application/epub+zip"]
+        "type": ["application/epub+zip", "url"]
+      },
+      "url": {
+        "pattern": ".*\.epub"
       },
       "href": "/index.html?action=open",
       "disposition": "window",
@@ -24,7 +28,10 @@
     },
     "view": {
       "filters": {
-        "type": ["application/epub+zip"]
+        "type": ["application/epub+zip", "url"]
+      },
+      "url": {
+        "pattern": ".*\.epub"
       },
       "href": "/index.html?action=view",
       "disposition": "window",
