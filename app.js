@@ -22,31 +22,39 @@ bookViewer.addObserver("pagechange", function(event) {
   console.log("Moved to page", event);
 });
 
+document.addEventListener("touchmove", function(event) {
+});
+
+if ("mozSetMessageHandler" in navigator) {
+  var onActivity = function(request) {
+    console.log("Activity request", request);
+  };
+  navigator.mozSetMessageHandler('open', onActivity);
+  navigator.mozSetMessageHandler('view', onActivity);
+}
+
 //
 // Load a book passed as URL.
 //
+var bookURL = UrlUtils.toURL("samples/lector.epub");
+var chapterNum = 0;
 var params = new URL(window.location).searchParams;
 console.log(params);
 try {
-  var bookURL = null;
   if (params.has("book")) {
     bookURL = UrlUtils.toURL(params.get("book"));
   }
 
-  if (bookURL) {
-    var chapterNum = 0;
-    if (params.has("chapter")) {
-      chapterNum = Number.parseInt(params.get("chapter"));
-    }
-    var promise = bookViewer.open(bookURL);
-    promise = promise.then(() =>
-      bookViewer.navigateTo(chapterNum)
-    );
-    promise = promise.then(null, e => console.error(e));
+  if (params.has("chapter")) {
+    chapterNum = Number.parseInt(params.get("chapter"));
   }
 } catch (ex) {
   console.error(ex);
 }
+
+bookViewer.open(bookURL).then(
+  bookViewer.navigateTo(chapterNum)
+).then(null, e => console.error(e));
 
 
 /**
