@@ -22,7 +22,7 @@ window.define(function() {
       observers.add(observer);
     },
     removeObserver: function(event, observer) {
-      this._observers.get(event).delete(observer);    
+      this._observers.get(event).delete(observer);
     },
     notify: function(event, value) {
       var observers = this._observers.get(event);
@@ -30,11 +30,13 @@ window.define(function() {
         throw new TypeError("Incorrect event: " + event);
       }
       for (var observer of observers) {
-        try {
-          observer(value);
-        } catch(ex if console.error(ex)) {
-          // This should never happen.
-        }
+        window.setTimeout(function() {
+          try {
+            observer(value);
+          } catch(ex if console.error(ex)) {
+            // This should never happen.
+          }
+        });
       }
     },
   };

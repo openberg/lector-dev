@@ -47,7 +47,7 @@ var Book = function(file) {
 
   promise = promise.then((pkg) => {
     this._package = pkg;
-    
+
     // Extract the table of contents
     console.log("I have the following files", [...this._archive.entries.keys()]);
     for (var itemref of pkg.querySelectorAll("package > spine > itemref")) {

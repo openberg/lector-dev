@@ -10,7 +10,11 @@ define(['js/book',
  * @extends {Observable} Instances of BookViewer notify of the following
  * events:
  * - pagechange ({page: number, lastPage:number}) The page being displayed.
- *    Numbering is relative to the current layout of the current chapter.
+ *    Numbering is relative to the current layout of the current chapter,
+ *    and may change by the simple fact of rotating the device or resizing
+ *    the screen.
+ * - chapterchange ({num: number}) The chapter that will be displayed
+ *    once the load is complete.
  * @param {Element} element The element in which to display the book.
  * It should generally by a `div`.
  */
@@ -18,7 +22,9 @@ function BookViewer(element) {
   if (!(element instanceof Element)) {
     throw new TypeError("Expected an instance of Element");
   }
-  Observable.call(this, ["pagechange"]);
+
+  // Call parent constructor.
+  Observable.call(this, ["pagechange", "chapterchange"]);
 
   /**
    * The element in which to display the book.
@@ -40,6 +46,7 @@ function BookViewer(element) {
 
   // Handle messages sent from the book itself.
   window.addEventListener("message", e => this._handleMessage(e));
+
   window.addEventListener("keypress", e => this._handleKeyPress(e));
 }
 BookViewer.prototype = Object.create(Observable.prototype);
@@ -90,15 +97,26 @@ BookViewer.prototype.navigateTo = function(chapter, endOfChapter) {
   var chapterResources = null;
   promise = promise.then(() => {
     var entry;
+    var num = -1;
     if (typeof chapter == "number") {
       entry = this._book.chapters[chapter];
+      num = chapter;
     } else {
       entry = this._book.getResource(chapter);
+      var chapters = this._book.chapters;
+      for (var i = 0; num < chapters.length; ++num) {
+        var resource = this._book.chapters[i];
+        if (entry === resource) {
+          num = i;
+          break;
+        }
+      }
     }
     if (!entry) {
       throw new Error("Could not find chapter " + chapter);
     }
     this._currentChapter = entry;
+    this.notify("chapterchange", { num: num });
     return entry.asXML();
   });
   promise = promise.then(xml => {

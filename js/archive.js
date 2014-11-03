@@ -18,6 +18,9 @@ window.zip.workerScriptsPath = scriptPath.href;
  * @constructor
  */
 var Archive = function(file) {
+  /**
+   * Mapping from url(string) -> Entry
+   */
   this._entries = new Map();
   this._initialized = false;
   this._promiseReader = null;
