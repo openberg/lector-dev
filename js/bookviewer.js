@@ -21,8 +21,8 @@ function BookViewer(element) {
    *    Numbering is relative to the current layout of the current chapter,
    *    and may change by the simple fact of rotating the device or resizing
    *    the screen.
-   * - chapterchange ({num: number}) The chapter that will be displayed
-   *    once the load is complete.
+   * - chapterchange ({chapter: number, lastChapter: number}) The chapter
+   *    that will be displayed once the load is complete.
    */
   this.notifications = new Notifications(["pagechange", "chapterchange"]);
 
@@ -116,7 +116,8 @@ BookViewer.prototype.navigateTo = function(chapter, endOfChapter) {
       throw new Error("Could not find chapter " + chapter);
     }
     this._currentChapter = entry;
-    this.notifications.notify("chapterchange", { num: num });
+    this.notifications.notify("chapterchange", { chapter: num,
+      lastChapter: this._book.chapters.length });
     return entry.asXML();
   });
   promise = promise.then(xml => {

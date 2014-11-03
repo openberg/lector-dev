@@ -19,9 +19,11 @@ $("arrow_right").addEventListener("click", function() {
 
 bookViewer.notifications.addObserver("pagechange", function(event) {
   console.log("Moved to page", event);
+  $("menu_bottom").textContent = "Chapter Page " + (event.page + 1) + "/" + (event.lastPage + 1);
 });
 bookViewer.notifications.addObserver("chapterchange", function(event) {
   console.log("Moved to chapter", event);
+  $("menu_top").textContent = "Chapter " + (event.chapter + 1) + "/" + (event.lastChapter + 1);
 });
 
 document.addEventListener("touchmove", function(event) {

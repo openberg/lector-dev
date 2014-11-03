@@ -37,6 +37,8 @@ html, body {
     background-color:green;
     position: absolute;
     transition: opacity 1s;
+    text-align: center;
+    color: white;
 }
 
 .top {
