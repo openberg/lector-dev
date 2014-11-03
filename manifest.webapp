@@ -20,7 +20,7 @@
         "type": ["application/epub+zip", "url"]
       },
       "url": {
-        "pattern": ".*\.epub"
+        "pattern": ".*\\.epub"
       },
       "href": "/index.html?action=open",
       "disposition": "window",
@@ -31,7 +31,7 @@
         "type": ["application/epub+zip", "url"]
       },
       "url": {
-        "pattern": ".*\.epub"
+        "pattern": ".*\\.epub"
       },
       "href": "/index.html?action=view",
       "disposition": "window",
