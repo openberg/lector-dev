@@ -33,6 +33,26 @@ if ("mozSetMessageHandler" in navigator) {
   navigator.mozSetMessageHandler('view', onActivity);
 }
 
+function hideMenus() {
+  if (!hideMenusTimeout) {
+    window.clearTimeout(hideMenusTimeout);
+  }
+  hideMenusTimeout = window.setTimeout(function() {
+    $("menu_top").classList.add("hidden");
+    $("menu_bottom").classList.add("hidden");
+    hideMenusTimeout = null;
+  }, 3000);
+}
+var hideMenusTimeout = null;
+
+window.addEventListener("click", function(event) {
+  console.log("Click");
+  $("menu_top").classList.remove("hidden");
+  $("menu_bottom").classList.remove("hidden");
+  hideMenus();
+});
+hideMenus();
+
 //
 // Load a book passed as URL.
 //

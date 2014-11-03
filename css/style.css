@@ -30,3 +30,23 @@ html, body {
 .right {
     right: 0;
 }
+
+.menu {
+    width: 100%;
+    height: 2em;
+    background-color:green;
+    position: absolute;
+    transition: opacity 1s;
+}
+
+.top {
+    top: 0;
+}
+
+.bottom {
+    bottom: 0;
+}
+
+.hidden {
+    opacity: 0;
+}
