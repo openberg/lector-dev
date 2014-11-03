@@ -63,23 +63,24 @@ hideMenus();
 var bookURL = UrlUtils.toURL("samples/lector.epub");
 var chapterNum = 0;
 var params = new URL(window.location).searchParams;
-console.log(params);
-try {
-  if (params.has("book")) {
-    bookURL = UrlUtils.toURL(params.get("book"));
+console.log("Params", params, new URL(window.location));
+if (params) {
+  try {
+    if (params.has("book")) {
+      bookURL = UrlUtils.toURL(params.get("book"));
+    }
+
+    if (params.has("chapter")) {
+      chapterNum = Number.parseInt(params.get("chapter"));
+    }
+  } catch (ex) {
+    console.error(ex);
   }
 
-  if (params.has("chapter")) {
-    chapterNum = Number.parseInt(params.get("chapter"));
-  }
-} catch (ex) {
-  console.error(ex);
+  bookViewer.open(bookURL).then(
+    bookViewer.navigateTo(chapterNum)
+  ).then(null, e => console.error(e));
 }
-
-bookViewer.open(bookURL).then(
-  bookViewer.navigateTo(chapterNum)
-).then(null, e => console.error(e));
-
 
 /**
  * The file picker.

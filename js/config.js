@@ -1,7 +1,7 @@
 define(function() {
 "use strict";
 
-let DEBUG = true;
+var DEBUG = true;
 
 /**
  * Miscellaneous information on the application.
@@ -28,6 +28,18 @@ return {
   set debug(x) {
     DEBUG = x;
   },
+
+  /**
+   * Various testing flags.
+   */
+  TESTING: {
+
+    /**
+     * Should we remove the standard URLSearchParams and replace it
+     * with ours? Used to test URLSearchParams.
+     */
+    POLYFILL_URL_SEARCH_PARAMS: false,
+  },
 };
-  
+
 });
