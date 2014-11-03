@@ -1,6 +1,5 @@
-window.define(['js/observable',
-               'js/archive'],
-              function(Observable, Archive) {
+window.define(['js/archive'],
+              function(Archive) {
 "use strict";
 
 var console = window.console;
@@ -8,12 +7,9 @@ var console = window.console;
 /**
  * Representation of a book.
  *
- * @notifies "open" Once the book has been initialized and may be read.
- * @extends Observable 
  * @constructor
  */
 var Book = function(file) {
-  Observable.call(this, ["open"]);
 
   // Function to call once initialization is complete.
   var resolveInitialized = null;
@@ -74,8 +70,6 @@ var Book = function(file) {
   });
 };
 Book.prototype = {
-  __proto__: Object.create(Observable.prototype),
-
   /**
    * Initialize the book, asynchronously.
    *

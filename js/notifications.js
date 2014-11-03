@@ -1,7 +1,24 @@
 window.define(function() {
   "use strict";
 
-  function Observable(events) {
+
+  /**
+   * A simple mechanism to send/receive notifications.
+   *
+   * Components which need to send custom events should offer a field
+   * `notifications`, which is an instance of `Notifications`. Clients may
+   * then registered to be notified whenever an event takes place,
+   * e.g.
+   * ````js
+   * viewer.notifications.addObserver("pagechange", function(event) {
+   *   console.log("I have just been informed of a pagechange", event);
+   * });
+   * ````
+   *
+   * @param {Array<string>} events The kind of events that this component
+   * may send.
+   */
+  function Notifications(events) {
     if (!Array.isArray(events)) {
       throw new TypeError("Expected an Array");
     }
@@ -13,7 +30,7 @@ window.define(function() {
       this._observers.set(k, new Set());
     }
   }
-  Observable.prototype = {
+  Notifications.prototype = {
     addObserver: function(event, observer) {
       var observers = this._observers.get(event);
       if (!observers) {
@@ -42,5 +59,5 @@ window.define(function() {
   };
 
   // Module definition
-  return Observable;
+  return Notifications;
 });

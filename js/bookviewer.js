@@ -1,20 +1,12 @@
 define(['js/book',
-        'js/observable',
+        'js/notifications',
         'js/urlutils'],
-  function(Book, Observable, UrlUtils) {
+  function(Book, Notifications, UrlUtils) {
 "use strict";
 
 /**
  * A component designed to display the contents of a book.
  *
- * @extends {Observable} Instances of BookViewer notify of the following
- * events:
- * - pagechange ({page: number, lastPage:number}) The page being displayed.
- *    Numbering is relative to the current layout of the current chapter,
- *    and may change by the simple fact of rotating the device or resizing
- *    the screen.
- * - chapterchange ({num: number}) The chapter that will be displayed
- *    once the load is complete.
  * @param {Element} element The element in which to display the book.
  * It should generally by a `div`.
  */
@@ -23,8 +15,16 @@ function BookViewer(element) {
     throw new TypeError("Expected an instance of Element");
   }
 
-  // Call parent constructor.
-  Observable.call(this, ["pagechange", "chapterchange"]);
+  /**
+   * Instances of BookViewer notify of the following events:
+   * - pagechange ({page: number, lastPage:number}) The page being displayed.
+   *    Numbering is relative to the current layout of the current chapter,
+   *    and may change by the simple fact of rotating the device or resizing
+   *    the screen.
+   * - chapterchange ({num: number}) The chapter that will be displayed
+   *    once the load is complete.
+   */
+  this.notifications = new Notifications(["pagechange", "chapterchange"]);
 
   /**
    * The element in which to display the book.
@@ -49,7 +49,7 @@ function BookViewer(element) {
 
   window.addEventListener("keypress", e => this._handleKeyPress(e));
 }
-BookViewer.prototype = Object.create(Observable.prototype);
+BookViewer.prototype = {};
 
 /**
  * Open a book.
@@ -116,7 +116,7 @@ BookViewer.prototype.navigateTo = function(chapter, endOfChapter) {
       throw new Error("Could not find chapter " + chapter);
     }
     this._currentChapter = entry;
-    this.notify("chapterchange", { num: num });
+    this.notifications.notify("chapterchange", { num: num });
     return entry.asXML();
   });
   promise = promise.then(xml => {
@@ -295,7 +295,7 @@ BookViewer.prototype._handleMessage = function(e) {
     this.changeChapterBy(data.args[0]);
     break;
   case "pagechange":
-    this.notify("pagechange", data.args[0]);
+    this.notifications.notify("pagechange", data.args[0]);
     break;
   default:
     console.error("Unknwon message", data.method);

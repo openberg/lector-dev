@@ -1,17 +1,22 @@
-define(["js/observable"],
-  function(Observable) {
+define(["js/notifications"],
+  function(Notifications) {
 
 "use strict";
 
 var BUFFER_DURATION_MS = 15;
 
 function SizeWatcher(element) {
-  Observable.call(this, ["resize"]);
+
+  /**
+   * Instances of SizeWatcher notify of the following events:
+   * - resize Shortly after the item has been resized.
+   */
+  this.notifications = new Notifications(["resize"]);
   this._element = element;
   var update = () => {
     this.innerWidth = this._element.innerWidth;
     this.innerHeight = this._element.innerHeight;
-    this.notify("resize");
+    this.notifications.notify("resize");
   };
   var delayed = null;
   this._element.addEventListener("resize", () => {
@@ -28,7 +33,6 @@ function SizeWatcher(element) {
   });
   update();
 }
-SizeWatcher.prototype = Object.create(Observable.prototype);
 
 return SizeWatcher;
 

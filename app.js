@@ -1,9 +1,8 @@
 window.require(['js/book',
                 'js/bookviewer',
-                'js/observable',
                 'js/sizewatcher',
                 'js/urlutils'],
-  function(Book, BookViewer, Observable, SizeWatcher, UrlUtils) {
+  function(Book, BookViewer, SizeWatcher, UrlUtils) {
 "use strict";
 
 var $ = id => document.getElementById(id);
@@ -18,8 +17,11 @@ $("arrow_right").addEventListener("click", function() {
   bookViewer.changePageBy(1);
 });
 
-bookViewer.addObserver("pagechange", function(event) {
+bookViewer.notifications.addObserver("pagechange", function(event) {
   console.log("Moved to page", event);
+});
+bookViewer.notifications.addObserver("chapterchange", function(event) {
+  console.log("Moved to chapter", event);
 });
 
 document.addEventListener("touchmove", function(event) {
