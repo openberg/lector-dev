@@ -4,3 +4,6 @@
 [submodule "lib/zip.js"]
 	path = lib/zip.js
 	url = https://github.com/gildas-lormeau/zip.js.git
+[submodule "lib/promisejs.org"]
+	path = lib/promisejs.org
+	url = https://github.com/ForbesLindesay/promisejs.org
