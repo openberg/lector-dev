@@ -14,6 +14,7 @@
   "launch_path": "/index.html?book=samples/alice.epub",
   "default_locale": "en",
   "type": "web",
+  "fullscreen": "true",
   "activities": {
     "open": {
       "filters": {
@@ -37,5 +38,6 @@
       "disposition": "window",
       "returnValue": "false"
     }
-  }
+  },
+  "orientation": ["portrait-primary"]
 }
