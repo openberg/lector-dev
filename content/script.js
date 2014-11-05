@@ -59,8 +59,8 @@ function setupColumns() {
   body.style.MozColumnWidth = gInnerWidth + "px";
   body.style.MozColumnGap = pagePadding + "px";
 //  body.style.height = innerHeight + "px";
-
 }
+
 var BUFFERING_DURATION_MS = 15;
 var resizing = null;
 window.addEventListener("resize", function() {
@@ -74,6 +74,19 @@ window.addEventListener("DOMContentLoaded", function observer() {
   window.removeEventListener("DOMContentLoaded", observer);
 });
 
+/**
+ * Configure the font size.
+ *
+ * @param {number} A factor by which to multiply the default font
+ * size, where 1.0 is normal size. Must be > 0.
+ */
+window.Lector.setZoomFactor(factor) {
+  if (typeof factor != "number" || factor <= 0) {
+    throw new TypeError("Expected a positive number, got " + factor);
+  }
+  document.documentElement.style.fontSize = (100 * factor) + "%";
+  setupColumns();
+}
 
 ///////////////
 // Communicating with the parent window
