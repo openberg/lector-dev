@@ -150,6 +150,9 @@ BookEpub.prototype = {
         return this._resources.get(key);
       }
       var entry = this._archive.entries.get(key);
+      if (!entry) {
+        return null;
+      }
       var resource = new Book.Resource(entry.filename, entry);
       this._resources.set(key, resource);
       return resource;
