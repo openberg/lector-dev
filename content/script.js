@@ -97,9 +97,18 @@ window.addEventListener("touchmove", function(event) {
     // is zooming. Let's not interfere with it.
     return;
   }
-  gCurrentTouchMove = event;
   event.preventDefault();
   event.stopPropagation();
+  gCurrentTouchMove = event;
+  requestAnimationFrame(function() {
+    // Let's follow the swipe immediately.
+    var originalX = gCurrentTouchStart.touches[0].clientX;
+    var currentX = gCurrentTouchMove.touches[0].clientX;
+    var deltaX = currentX - originalX;
+    var width = gInnerWidth + columnGap;
+    var defaultPosition = currentPage * width;
+    scrollToPosition(defaultPosition - deltaX);
+  });
 });
 window.addEventListener("touchstart", function(event) {
   console.log("touchstart", event);
@@ -122,12 +131,11 @@ window.addEventListener("touchend", function(event) {
   gCurrentTouchStart = null;
   gCurrentTouchMove = null;
   var deltaX = currentX - originalX;
-  if (Math.abs(deltaX) < gInnerWidth * .05) {
-    // The finger moved by less than 5% of the width of the screen, it's
+  if (Math.abs(deltaX) < gInnerWidth * .1) {
+    // The finger moved by less than 10% of the width of the screen, it's
     // probably not intended as a swipe, so let's ignore it.
-    return;
-  }
-  if (deltaX < 0) {
+    scrollBy(0);
+  } else if (deltaX < 0) {
     scrollBy(1);
   } else {
     scrollBy(-1);
@@ -159,7 +167,7 @@ function scrollToPosition(position) {
 
 function scrollToPage(where) {
   console.log("scrollToPage", where);
-  var width = window.innerWidth + columnGap;
+  var width = gInnerWidth + columnGap;
   var scrollMaxX = document.body.scrollWidth;
   var lastPage = Math.floor(scrollMaxX / width);
   if (where == Infinity) {
@@ -179,9 +187,6 @@ window.Lector.scrollToPage = scrollToPage;
  * May be negative to scroll backwards. Ignored if 0.
  */
 function scrollBy(deltaPages) {
-  if (deltaPages == 0) {
-    return;
-  }
   var scrollMaxX = document.body.scrollWidth;
   var nextPage = currentPage + deltaPages;
   var width = window.innerWidth + columnGap;
