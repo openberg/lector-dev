@@ -1,7 +1,9 @@
 define(['js/book',
+        'js/book-epub',
         'js/notifications',
         'js/urlutils'],
-  function(Book, Notifications, UrlUtils) {
+  function(Book, BookEpub,
+          Notifications, UrlUtils) {
 "use strict";
 
 /**
@@ -54,17 +56,9 @@ BookViewer.prototype = {};
 /**
  * Open a book.
  */
-BookViewer.prototype.open = function(book) {
-  console.log("BookViewer", "opening book", book);
-  if (book instanceof Book) {
-    this._book = book;
-  } else if (book instanceof window.URL) {
-    this._book = new Book(book);
-  } else if (book instanceof window.File) {
-    this._book = new Book(book);
-  } else {
-    throw new TypeError("Expected a Book, URL or File, got " + book);
-  }
+BookViewer.prototype.open = function(source) {
+  console.log("BookViewer", "opening book", source);
+  this._book = Book.open(source, [BookEpub]);
   return this._book.init();
 };
 
