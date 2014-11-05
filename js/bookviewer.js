@@ -165,7 +165,7 @@ BookViewer.prototype.navigateTo = function(chapter, endOfChapter) {
       var href = node.getAttribute(attribute);
       console.log("Generating link for", node, attribute, href);
       if (!href) {
-        // No link at all, e.g. anchors.
+        // No link at all, e.g. anchors, inline scripts.
         return;
       }
       try {
@@ -190,16 +190,16 @@ BookViewer.prototype.navigateTo = function(chapter, endOfChapter) {
       });
       resources.push(promise);
     };
-    xml.querySelectorAll("html > head > link").forEach(link => {
+    [...xml.querySelectorAll("html > head > link")].forEach(link => {
       if (link.getAttribute("rel") != "stylesheet") {
         return;
       }
       generateLink(link, "href");
     });
-    xml.querySelectorAll("html > body img").forEach(img => {
+    [...xml.querySelectorAll("html > body img")].forEach(img => {
       generateLink(img, "src");
       // Nicety hack: images with width="100%" or height="100%" are bound
-      // to break. Let's get rid of thes attributes.
+      // to break. Let's get rid of these attributes.
       if (img.getAttribute("width") == "100%") {
         img.removeAttribute("width");
       }
@@ -207,13 +207,13 @@ BookViewer.prototype.navigateTo = function(chapter, endOfChapter) {
         img.removeAttribute("height");
       }
     });
-    xml.querySelectorAll("html > body iframe").forEach(iframe => {
+    [...xml.querySelectorAll("html > body iframe")].forEach(iframe => {
       generateLink(iframe, "src");
     });
-    xml.querySelectorAll("html > head script").forEach(script => {
+    [...xml.querySelectorAll("html > head script")].forEach(script => {
       generateLink(script, "src");
     });
-    xml.querySelectorAll("html > body a").forEach(a => {
+    [...xml.querySelectorAll("html > body a")].forEach(a => {
       console.log("Rewriting link", a);
       var href = a.getAttribute("href");
       if (!href || href.startsWith("#") || href.startsWith("javascript") || href.contains("://")) {
