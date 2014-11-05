@@ -92,7 +92,7 @@ window.addEventListener("keypress", function(e) {
 var gCurrentTouchStart = null;
 var gCurrentTouchMove = null;
 window.addEventListener("touchmove", function(event) {
-    if (event.touches.length != 1) {
+  if (event.touches.length > 1) {
     // This is a multi-touch event, so probably the user
     // is zooming. Let's not interfere with it.
     return;
@@ -102,7 +102,8 @@ window.addEventListener("touchmove", function(event) {
   event.stopPropagation();
 });
 window.addEventListener("touchstart", function(event) {
-  if (event.touches.length != 1) {
+  console.log("touchstart", event);
+  if (event.touches.length > 1) {
     // This is a multi-touch event, so probably the user
     // is zooming. Let's not interfere with it.
     return;
@@ -110,14 +111,16 @@ window.addEventListener("touchstart", function(event) {
   gCurrentTouchStart = event;
 });
 window.addEventListener("touchend", function(event) {
-  if (event.touches.length != 1) {
+  console.log("touchend", event);
+  if (event.touches.length >= 1) {
     // This is a multi-touch event, so probably the user
     // is zooming. Let's not interfere with it.
     return;
   }
   var originalX = gCurrentTouchStart.touches[0].clientX;
-  var currentX = event.touches[0].clientX;
+  var currentX = gCurrentTouchMove.touches[0].clientX;
   gCurrentTouchStart = null;
+  gCurrentTouchMove = null;
   var deltaX = currentX - originalX;
   if (Math.abs(deltaX) < gInnerWidth * .05) {
     // The finger moved by less than 5% of the width of the screen, it's
