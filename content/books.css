@@ -7,12 +7,21 @@ html, body {
 }
 
 body {
+/* Support pages as columns. */
     -moz-column-fill: auto;
     -moz-column-gap: 40px;
     -webkit-column-fill: auto;
     -webkit-column-gap: 40px;
-    text-align: justify;
+
+/* Transition while turning pages. */
     transition: transform .3s;
+
+/* Nice justification for the book. */
+    text-align: justify;
+    hyphens: auto;
+    -moz-hyphens: auto;
+    -webkit-hyphens: auto;
+    -ms-hyphens: auto;
 }
 
 img {
