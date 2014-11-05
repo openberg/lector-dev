@@ -80,13 +80,13 @@ window.addEventListener("DOMContentLoaded", function observer() {
  * @param {number} A factor by which to multiply the default font
  * size, where 1.0 is normal size. Must be > 0.
  */
-window.Lector.setZoomFactor(factor) {
+window.Lector.setZoomFactor = function(factor) {
   if (typeof factor != "number" || factor <= 0) {
     throw new TypeError("Expected a positive number, got " + factor);
   }
   document.documentElement.style.fontSize = (100 * factor) + "%";
   setupColumns();
-}
+};
 
 ///////////////
 // Communicating with the parent window
