@@ -130,13 +130,13 @@ BookViewer.prototype.navigateTo = function(chapter, endOfChapter) {
     var injectLink = xml.createElement("link");
     injectLink.setAttribute("rel", "stylesheet");
     injectLink.setAttribute("type", "text/css");
-    injectLink.setAttribute("href", UrlUtils.toURL("content/books.css"));
+    injectLink.setAttribute("href", UrlUtils.toURL("content/books.css").href);
     head.appendChild(injectLink);
 
     // 2. Inject global book scripts
     var injectScript = xml.createElement("script");
     injectScript.setAttribute("type", "text/javascript");
-    injectScript.setAttribute("src", UrlUtils.toURL("content/script.js"));
+    injectScript.setAttribute("src", UrlUtils.toURL("content/script.js").href);
     injectScript.textContent = "// Nothing to see"; // Workaround serializer bug
     head.appendChild(injectScript);
 
@@ -154,7 +154,7 @@ BookViewer.prototype.navigateTo = function(chapter, endOfChapter) {
     } else {
       injectScript2 = xml.createElement("script");
       injectScript2.setAttribute("type", "text/javascript");
-      injectScript2.textContent = "window.addEventListener('load', function() {window.Lector.scrollToPage(0);});";
+      injectScript2.textContent = "window.addEventListener('load', function() {if (window.Lector) { window.Lector.scrollToPage(0); } });";
     }
     head.appendChild(injectScript2);
 
@@ -190,13 +190,13 @@ BookViewer.prototype.navigateTo = function(chapter, endOfChapter) {
       });
       resources.push(promise);
     };
-    for (var link of xml.querySelectorAll("html > head > link")) {
+    xml.querySelectorAll("html > head > link").forEach(link => {
       if (link.getAttribute("rel") != "stylesheet") {
-        continue;
+        return;
       }
       generateLink(link, "href");
-    }
-    for (var img of xml.querySelectorAll("html > body img")) {
+    });
+    xml.querySelectorAll("html > body img").forEach(img => {
       generateLink(img, "src");
       // Nicety hack: images with width="100%" or height="100%" are bound
       // to break. Let's get rid of thes attributes.
@@ -206,25 +206,24 @@ BookViewer.prototype.navigateTo = function(chapter, endOfChapter) {
       if (img.getAttribute("height") == "100%") {
         img.removeAttribute("height");
       }
-    }
-    for (var iframe of xml.querySelectorAll("html > body iframe")) {
+    });
+    xml.querySelectorAll("html > body iframe").forEach(iframe => {
       generateLink(iframe, "src");
-    }
-    for (var script of xml.querySelectorAll("html > head script")) {
-      generateLink(link, "src");
-    }
-
-    for (var a of xml.querySelectorAll("html > body a")) {
+    });
+    xml.querySelectorAll("html > head script").forEach(script => {
+      generateLink(script, "src");
+    });
+    xml.querySelectorAll("html > body a").forEach(a => {
       console.log("Rewriting link", a);
       var href = a.getAttribute("href");
       if (!href || href.startsWith("#") || href.startsWith("javascript") || href.contains("://")) {
         // Not a link internal to the book.
-        continue;
+        return;
       }
       // At this stage, we assume that this is a link internal to the book.
       // We need to turn it into a script.
       a.setAttribute("href", "javascript:window.Lector.goto('" + href + "');");
-    }
+    });
 
     return Promise.all(resources).then(resources => {
       console.log("All resources are now available", resources);
@@ -239,7 +238,7 @@ BookViewer.prototype.navigateTo = function(chapter, endOfChapter) {
     return Promise.resolve(new TextEncoder().encode(source));
   });
   promise = promise.then(encoded => {
-    var blob = new Blob([encoded], { type: "text/html" }); 
+    var blob = new Blob([encoded], { type: "text/html" });
     var url = URL.createObjectURL(blob);
     console.log("Associating resources", chapterResources, "to url", url);
     this._resourcesByChapter.set(url, { key: chapter, resources: chapterResources});
