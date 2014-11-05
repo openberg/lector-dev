@@ -1,8 +1,9 @@
-window.require(['js/book',
+window.require(['js/polyfills',
+                'js/book',
                 'js/bookviewer',
                 'js/sizewatcher',
                 'js/urlutils'],
-  function(Book, BookViewer, SizeWatcher, UrlUtils) {
+  function(_, Book, BookViewer, SizeWatcher, UrlUtils) {
 "use strict";
 
 var $ = id => document.getElementById(id);

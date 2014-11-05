@@ -7,3 +7,6 @@
 [submodule "lib/promisejs.org"]
 	path = lib/promisejs.org
 	url = https://github.com/ForbesLindesay/promisejs.org
+[submodule "lib/lie"]
+	path = lib/lie
+	url = https://github.com/calvinmetcalf/lie
