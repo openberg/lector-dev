@@ -10,9 +10,29 @@
 
 window.Lector = {};
 
-var columnGap = 40;
+/**
+ * The number of pixels between two pages.
+ */
+var pagePadding = 40;
+
+/**
+ * The number of the current page inside the chapter,
+ * (0-indexed).
+ */
 var currentPage = 0;
+
+/**
+ * The width of the contents of the window.
+ * Use this variable instead of `window.innerWidth`
+ * for speed.
+ */
 var gInnerWidth = window.innerWidth;
+
+/**
+ * The height of the contents of the window.
+ * Use this variable instead of `window.innerHeight`
+ * for speed.
+ */
 var gInnerHeight = window.innerHeight;
 
 ///////////////
@@ -24,7 +44,7 @@ function setupColumns() {
   gInnerHeight = window.innerHeight;
   var body = document.body;
   body.style.MozColumnWidth = gInnerWidth + "px";
-  body.style.MozColumnGap = columnGap + "px";
+  body.style.MozColumnGap = pagePadding + "px";
 //  body.style.height = innerHeight + "px";
 
 }
@@ -91,6 +111,7 @@ window.addEventListener("keypress", function(e) {
 
 var gCurrentTouchStart = null;
 var gCurrentTouchMove = null;
+var gCurrentTouchAnimating = false;
 window.addEventListener("touchmove", function(event) {
   if (event.touches.length > 1) {
     // This is a multi-touch event, so probably the user
@@ -100,12 +121,19 @@ window.addEventListener("touchmove", function(event) {
   event.preventDefault();
   event.stopPropagation();
   gCurrentTouchMove = event;
+  if (gCurrentTouchAnimating) {
+    return;
+  }
+  gCurrentTouchAnimating = true;
+
   requestAnimationFrame(function() {
+    gCurrentTouchAnimating = false;
+
     // Let's follow the swipe immediately.
     var originalX = gCurrentTouchStart.touches[0].clientX;
     var currentX = gCurrentTouchMove.touches[0].clientX;
     var deltaX = currentX - originalX;
-    var width = gInnerWidth + columnGap;
+    var width = gInnerWidth + pagePadding;
     var defaultPosition = currentPage * width;
     scrollToPosition(defaultPosition - deltaX);
   });
@@ -167,7 +195,7 @@ function scrollToPosition(position) {
 
 function scrollToPage(where) {
   console.log("scrollToPage", where);
-  var width = gInnerWidth + columnGap;
+  var width = gInnerWidth + pagePadding;
   var scrollMaxX = document.body.scrollWidth;
   var lastPage = Math.floor(scrollMaxX / width);
   if (where == Infinity) {
@@ -189,7 +217,7 @@ window.Lector.scrollToPage = scrollToPage;
 function scrollBy(deltaPages) {
   var scrollMaxX = document.body.scrollWidth;
   var nextPage = currentPage + deltaPages;
-  var width = window.innerWidth + columnGap;
+  var width = window.innerWidth + pagePadding;
   if (nextPage < 0) {
     console.log("Next page is < 0");
     window.parent.postMessage({method: "changeChapterBy", args: [-1]}, "*");
