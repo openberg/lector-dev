@@ -47,7 +47,11 @@ var Book = function(file) {
     // Extract the table of contents
     console.log("I have the following files", [...this._archive.entries.keys()]);
     for (var itemref of pkg.querySelectorAll("package > spine > itemref")) {
-      var item = pkg.getElementById(itemref.getAttribute("idref"));
+      var item = this._getElementById(pkg, itemref.getAttribute("idref"));
+      console.log("Item", pkg, itemref, itemref.getAttribute("idref"), item);
+      if (!item) {
+        console.log(new XMLSerializer().serializeToString(pkg));
+      }
       var href = item.getAttribute("href");
       var url;
       try {
@@ -124,6 +128,34 @@ Book.prototype = {
   getResource: function(resource) {
     return this._archive.entries.get(resource);
   },
+
+  /**
+   * Workaround for older browsers that can't use `pkg.getElementById`
+   *
+   * @param {XMLDocument} pkg The document in which to get by id.
+   * @param {string} id The identifier to search for.
+   */
+  _getElementById: function(pkg, id) {
+    if (!pkg.Lector || !pkg.Lector.identifiersCache) {
+      // We do not have a cache of identifiers yet, either because
+      // we know that pkg.getElementById works, or because we haven't
+      // tested yet.
+
+      // If we are lucky, `pkg.getElementById` works.
+      var result = pkg.getElementById(id);
+      if (result) {
+        return result;
+      }
+
+      // Otherwise, we need to build a cache to emulate pkg.getElementById.
+      var elements = pkg.querySelectorAll("[id]");
+      pkg.Lector = {};
+      pkg.Lector.identifiersCache = new Map([
+        [e.getAttribute("id"), e] for (e of elements)
+      ]);
+    }
+    return pkg.Lector.identifiersCache.get(id);
+  }
 };
 
 
