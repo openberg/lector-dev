@@ -35,13 +35,26 @@ var gInnerWidth = window.innerWidth;
  */
 var gInnerHeight = window.innerHeight;
 
+/**
+ * The size of 1em, in pixels.
+ */
+var gOneEM = parseFloat(getComputedStyle(document.documentElement).fontSize);
+
+/**
+ * The width of the page, in pixels.
+ */
+var gPageWidth = gInnerWidth + pagePadding - 2 * gOneEM;
+
 ///////////////
 // Adapting column size
 //
 
 function setupColumns() {
+  console.log("Setting up columns", document.body, window);
   gInnerWidth = window.innerWidth;
   gInnerHeight = window.innerHeight;
+  gOneEM = parseFloat(getComputedStyle(document.documentElement).fontSize);
+  gPageWidth = gInnerWidth + pagePadding - 2 * gOneEM;
   var body = document.body;
   body.style.MozColumnWidth = gInnerWidth + "px";
   body.style.MozColumnGap = pagePadding + "px";
@@ -133,7 +146,7 @@ window.addEventListener("touchmove", function(event) {
     var originalX = gCurrentTouchStart.touches[0].clientX;
     var currentX = gCurrentTouchMove.touches[0].clientX;
     var deltaX = currentX - originalX;
-    var width = gInnerWidth + pagePadding;
+    var width = gPageWidth;
     var defaultPosition = currentPage * width;
     scrollToPosition(defaultPosition - deltaX);
   });
@@ -195,7 +208,7 @@ function scrollToPosition(position) {
 
 function scrollToPage(where) {
   console.log("scrollToPage", where);
-  var width = gInnerWidth + pagePadding;
+  var width = gPageWidth;
   var scrollMaxX = document.body.scrollWidth;
   var lastPage = Math.floor(scrollMaxX / width);
   if (where == Infinity) {
@@ -217,7 +230,7 @@ window.Lector.scrollToPage = scrollToPage;
 function scrollBy(deltaPages) {
   var scrollMaxX = document.body.scrollWidth;
   var nextPage = currentPage + deltaPages;
-  var width = window.innerWidth + pagePadding;
+  var width = gPageWidth;
   if (nextPage < 0) {
     console.log("Next page is < 0");
     window.parent.postMessage({method: "changeChapterBy", args: [-1]}, "*");
