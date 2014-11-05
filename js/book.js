@@ -47,16 +47,16 @@ Book.prototype = {
   /**
    * Get all the chapters of this book.
    *
-   * @type {Array<Book.Entry>} Entries for this book.
+   * @type {Array<Book.Resource>} Entries for this book.
    */
   get chapters() {
     throw new Error("Not implemented: get chapters()")
   },
 
   /**
-   * Get a resource by name.
+   * Get a resource by name or number.
    *
-   * @type {Book.Entry}
+   * @type {Book.Resource}
    */
   getResource: function(name) {
     throw new Error("Not implemented: getResource()");
@@ -64,19 +64,95 @@ Book.prototype = {
 };
 
 /**
+ * A resource of the book, such as a page, image, sound,
+ * script, etc.
+ *
+ * @param {string} name A name, used for debugging.
+ * @param {{asObjectURL: function()}} An object that may provide the data
+ * as an object URL.
  * @constructor
  */
-Book.Entry = function() {
+Book.Resource = function(name, provider) {
+  this._name = name;
+  this._clients = new Map();
+  this._provider = provider;
+  this._cachedPromiseObjectURL = null;
 };
-Book.Entry.prototype = {
-  asObjectURL: function() {
-    throw new Error("Not implemented: asObjectURL");
+Book.Resource.DELAY_BEFORE_UNLOAD_MS = 1000;
+Book.Resource.prototype = {
+  _acquire: function(key) {
+    if (!key) {
+      throw new TypeError("_acquire expected a key");
+    }
+    var clients = this._clients.get(key);
+    if (!clients) {
+      this._clients.set(key, 1);
+    } else {
+      this._clients.set(key, clients + 1);
+    }
   },
-  asCachedEntry: function() {
-    throw new Error("Not implemented: asCachedEntry");
+  release: function(key) {
+    if (!key) {
+      throw new TypeError("release expected a key");
+    }
+    var clients = this._clients.get(key);
+    if (clients == null) {
+      throw new Error("Invalid key: " + key + ", expected one of " + [...this._clients.keys()].join());
+    }
+    this._clients.set(key, clients - 1);
+    if (clients != 1) {
+      console.log("I am not the last client for this entry with", key, this._name);
+      return;
+    }
+    this._clients.delete(key);
+    if (this._clients.size != 0) {
+      console.log("I am not the last client for this entry", this._name);
+      return;
+    }
+    // Oh, this was the last client.
+    // We may want to remove the object from the cache.
+    // Let's wait a bit, just in case someone immediately needs to read the same resource.
+    window.setTimeout(() => {
+      if (this._clients.size != 0) {
+        // Someone else has acquired this object url, they are now in charge of deallocating it.
+        console.log("Someone has reacquired the url", this._name);
+        return;
+      }
+      console.log("Time to release this url once and for all", this._name);
+      this._cachedPromiseObjectURL.then(url => URL.revokeObjectURL(url));
+      this._cachedPromiseObjectURL = null;
+    }, Book.Resource.DELAY_BEFORE_UNLOAD_MS);
   },
-  asXML: function() {
-    throw new Error("Not implemented: asXML");
+
+  asObjectURL: function(key) {
+    this._acquire(key);
+    if (!this._cachedPromiseObjectURL) {
+      this._cachedPromiseObjectURL = this._provider.asObjectURL();
+    }
+    return this._cachedPromiseObjectURL;
+  },
+
+  /**
+   * Parse the entry as a XML document.
+   *
+   * @return Promise<XMLDocument>
+   */
+  asXML: function(key, autorelease = true) {
+    var promiseURL = this.asObjectURL(key);
+    var promise = new Promise(resolve =>
+      promiseURL.then(url => {
+        var parser = new XMLHttpRequest();
+        parser.responseType = "xml";
+        parser.addEventListener("loadend", (e) => {
+          if (autorelease) {
+            this.release(key);
+          }
+          resolve(parser.responseXML);
+        });
+        parser.open("GET", url);
+        parser.send();
+    }));
+    return promise;
   },
 };
 

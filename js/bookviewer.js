@@ -112,7 +112,7 @@ BookViewer.prototype.navigateTo = function(chapter, endOfChapter) {
     this._currentChapter = entry;
     this.notifications.notify("chapterchange", { chapter: num,
       lastChapter: this._book.chapters.length });
-    return entry.asXML();
+    return entry.asXML(this, true);
   });
   promise = promise.then(xml => {
     //
@@ -176,11 +176,10 @@ BookViewer.prototype.navigateTo = function(chapter, endOfChapter) {
         console.log("Could not find resource for", resource);
         return;
       }
-      var entry = resource.asCachedEntry(chapter);
-      var promise = entry.asObjectURL();
+      var promise = resource.asObjectURL(chapter);
       promise = promise.then(url => {
         node.setAttribute(attribute, url);
-        return entry;
+        return resource;
       });
       resources.push(promise);
     };
@@ -225,6 +224,9 @@ BookViewer.prototype.navigateTo = function(chapter, endOfChapter) {
       return Promise.resolve(xml);
     });
   });
+
+  // Serialie document back to an object URL, and pass it
+  // to the iframe.
   promise = promise.then(xml => {
     return Promise.resolve(new XMLSerializer().serializeToString(xml));
   });
@@ -238,6 +240,10 @@ BookViewer.prototype.navigateTo = function(chapter, endOfChapter) {
     this._resourcesByChapter.set(url, { key: chapter, resources: chapterResources});
     this._iframe.setAttribute("src", url);
     URL.revokeObjectURL(url);
+  });
+
+  return promise.then(null, function(err) {
+    console.error("Error in navigateTo", err);
   });
 };
 

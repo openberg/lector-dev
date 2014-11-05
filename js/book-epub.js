@@ -23,6 +23,7 @@ var BookEpub = function(file) {
   this._promiseInitialized = new Promise(resolve => resolveInitialized = resolve);
   this._promiseInitialized.then(() => this._initialized = true);
   this._chapters = [];
+  this._resources = new Map();
   this._resolveTo = null;
 
   // Read package document and toc document.
@@ -31,8 +32,9 @@ var BookEpub = function(file) {
   promise = promise.then(() => {
     // File `container.xml` tells us where we can find the package document.
     // (generally OEBPS/content.opf).
-    var containerEntry = this._archive.entries.get("META-INF/container.xml");
-    return containerEntry.asXML();
+    var containerEntry = new Book.Resource("container.xml", this._archive.entries.get("META-INF/container.xml"));
+    console.log("Container entry", containerEntry);
+    return containerEntry.asXML(this, true);
   });
 
   promise = promise.then(container => {
@@ -40,7 +42,7 @@ var BookEpub = function(file) {
     var eltRoot = container.querySelector("container > rootfiles > rootfile");
     var path = eltRoot.getAttribute("full-path");
     this._resolveTo = path.substring(0, path.lastIndexOf("/"));;
-    return this._archive.entries.get(path).asXML();
+    return new Book.Resource(path, this._archive.entries.get(path)).asXML(this, true);
   });
 
   promise = promise.then((pkg) => {
@@ -64,10 +66,9 @@ var BookEpub = function(file) {
         url = this._resolveTo ? this._resolveTo + "/" + href : href;
       }
       console.log("Looking for url", url, href);
-      this._chapters.push(this._archive.entries.get(url));
+      this._chapters.push(new Book.Resource(url, this._archive.entries.get(url)));
     }
   });
-
 
   promise = promise.then(resolveInitialized, ex => {
     // Make sure that errors are reported early.
@@ -106,6 +107,11 @@ BookEpub.prototype = {
     return this._package;
   },
 
+  /**
+   * The title of the book.
+   *
+   * @type {string}
+   */
   get title() {
     var node =
         this._packageDocument.querySelector("package > metadata > title");
@@ -115,6 +121,11 @@ BookEpub.prototype = {
     return undefined;
   },
 
+  /**
+   * The author of the book.
+   *
+   * @type {string}
+   */
   get author() {
     var node =
         this._packageDocument.querySelector("package > metadata > creator");
@@ -124,13 +135,27 @@ BookEpub.prototype = {
     return undefined;
   },
 
+  /**
+   * Get the list of chapters
+   */
   get chapters() {
-    this._ensureInitialized();
     return this._chapters;
   },
 
-  getResource: function(resource) {
-    return this._archive.entries.get(resource);
+  getResource: function(key) {
+    if (typeof key == "number") {
+      return this._chapters[key];
+    } else if (typeof key == "string") {
+      if (this._resources.has(key)) {
+        return this._resources.get(key);
+      }
+      var entry = this._archive.entries.get(key);
+      var resource = new Book.Resource(entry.filename, entry);
+      this._resources.set(key, resource);
+      return resource;
+    } else {
+      throw new TypeError("Expected a number or a string");
+    }
   },
 
   /**
