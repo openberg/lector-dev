@@ -33,6 +33,7 @@ function BookViewer(element) {
     "chapter:exit",
     "chapter:titleavailable",
     "chapter:enter",
+    "book:open",
   ]);
 
   /**
@@ -68,7 +69,11 @@ BookViewer.prototype = {};
 BookViewer.prototype.open = function(source) {
   console.log("BookViewer", "opening book", source);
   this._book = Book.open(source, [BookEpub]);
-  return this._book.init();
+  var promise = this._book.init();
+  promise = promise.then(() => {
+    this.notifications.notify("book:open", { book: this._book });
+  });
+  return promise;
 };
 
 /**

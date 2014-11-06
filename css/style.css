@@ -43,6 +43,10 @@ html, body {
     color: white;
 }
 
+.menu.hidden_text {
+  color: green;
+};
+
 .top {
     top: 0;
 }
