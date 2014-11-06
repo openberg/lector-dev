@@ -23,10 +23,17 @@ function BookViewer(element) {
    *    Numbering is relative to the current layout of the current chapter,
    *    and may change by the simple fact of rotating the device or resizing
    *    the screen.
-   * - chapterchange ({chapter: number, lastChapter: number}) The chapter
+   * - chapterwillchange ({chapter: number, lastChapter: number}) The chapter
    *    that will be displayed once the load is complete.
+   * - chapterhaschanged ({title: string}) The chapter
+   *    that has just been displayed.
    */
-  this.notifications = new Notifications(["pagechange", "chapterchange"]);
+  this.notifications = new Notifications([
+    "page:changing",
+    "chapter:exit",
+    "chapter:titleavailable",
+    "chapter:enter",
+  ]);
 
   /**
    * The element in which to display the book.
@@ -42,7 +49,9 @@ function BookViewer(element) {
    * The book currently displayed.
    */
   this._book = null;
-  this._currentChapter = null;
+  this._chapter = null;
+
+  this._currentChapterEntry = null;
 
   this._resourcesByChapter = new Map();
 
@@ -109,9 +118,12 @@ BookViewer.prototype.navigateTo = function(chapter, endOfChapter) {
     if (!entry) {
       throw new Error("Could not find chapter " + chapter);
     }
-    this._currentChapter = entry;
-    this.notifications.notify("chapterchange", { chapter: num,
-      lastChapter: this._book.chapters.length });
+    this._currentChapterEntry = entry;
+    this._chapter = {
+      title: null,
+      num: num,
+    };
+    this.notifications.notify("chapter:exit", { chapter: this._chapter });
     return entry.asXML(this, true);
   });
   promise = promise.then(xml => {
@@ -120,6 +132,10 @@ BookViewer.prototype.navigateTo = function(chapter, endOfChapter) {
     //
     var head = xml.querySelector("html > head");
     console.log("Chapter init", 1);
+
+    this._chapter.title = head.querySelector("title").textContent;
+    this.notifications.notify("chapter:titleavailable", { chapter: this._chapter });
+
     // 1. Inject global book stylesheet
     var injectLink = xml.createElement("link");
     injectLink.setAttribute("rel", "stylesheet");
@@ -251,8 +267,8 @@ BookViewer.prototype.changeChapterBy = function(delta) {
   var promise = new Promise(resolve => resolve(this._book.chapters));
   promise = promise.then(chapters => {
     for (var i = 0; i < chapters.length; ++i) {
-      console.log("Comparing", chapters[i], this._currentChapter);
-      if (chapters[i] == this._currentChapter) {
+      console.log("Comparing", chapters[i], this._currentChapterEntry);
+      if (chapters[i] == this._currentChapterEntry) {
         return this.navigateTo(i + delta, delta == -1);
       }
     }
@@ -295,7 +311,10 @@ BookViewer.prototype._handleMessage = function(e) {
     this.changeChapterBy(data.args[0]);
     break;
   case "pagechange":
-    this.notifications.notify("pagechange", data.args[0]);
+    this.notifications.notify("page:changing", data.args[0]);
+    break;
+  case "load":
+    this.notifications.notify("chapter:enter", { chapter: this._chapter });
     break;
   default:
     console.error("Unknwon message", data.method);
@@ -323,6 +342,18 @@ BookViewer.prototype._handleKeyPress = function(e) {
       break;
   }
 };
+
+Object.defineProperty(BookViewer.prototype, "book", {
+  get: function() {
+    return this._book;
+  }
+});
+
+Object.defineProperty(BookViewer.prototype, "chapter", {
+  get: function() {
+    return this._chapter;
+  }
+});
 
 /**
  * Handle keyboard navigation.

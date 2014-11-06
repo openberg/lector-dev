@@ -18,13 +18,24 @@ $("arrow_right").addEventListener("click", function() {
   bookViewer.changePageBy(1);
 });
 
-bookViewer.notifications.addObserver("pagechange", function(event) {
+bookViewer.notifications.addObserver("page:changing", function(event) {
   console.log("Moved to page", event);
-  $("menu_bottom").textContent = "Chapter Page " + (event.page + 1) + "/" + (event.lastPage + 1);
+  $("menu_bottom").textContent = "Page " + (event.page + 1) + "/" + (event.lastPage + 1) + " in document";
 });
-bookViewer.notifications.addObserver("chapterchange", function(event) {
-  console.log("Moved to chapter", event);
-  $("menu_top").textContent = "Chapter " + (event.chapter + 1) + "/" + (event.lastChapter + 1);
+bookViewer.notifications.addObserver("chapter:exit", function(event) {
+  console.log("Leaving chapter", event);
+  $("menu_top").textContent = "(Loading document " + event.num + ")";
+  showMenus();
+});
+bookViewer.notifications.addObserver("chapter:titleavailable", function(event) {
+  console.log("Loading chapter", event);
+  $("menu_top").textContent = event.chapter.title + " (Loading)";
+  showMenus();
+});
+bookViewer.notifications.addObserver("chapter:enter", function(event) {
+  console.log("Loading chapter", event);
+  $("menu_top").textContent = event.chapter.title;
+  showMenus();
 });
 
 if ("mozSetMessageHandler" in navigator) {
@@ -45,11 +56,15 @@ function hideMenus() {
 }
 var hideMenusTimeout = null;
 
-window.addEventListener("click", function(event) {
-  console.log("Click");
+function showMenus() {
   $("menu_top").classList.remove("hidden");
   $("menu_bottom").classList.remove("hidden");
   hideMenus();
+}
+
+window.addEventListener("click", function(event) {
+  console.log("Click");
+  showMenus();
 });
 hideMenus();
 

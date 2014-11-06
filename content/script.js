@@ -98,8 +98,12 @@ window.Lector.goto = function(href) {
 };
 
 ///////////////
-// Garbage-collecting urls
+// Load/unload
 //
+
+window.addEventListener("load", function() {
+  window.parent.postMessage({method: "load", args:[]}, "*");
+});
 
 window.addEventListener("unload", function() {
   window.parent.postMessage({method: "unload", args:[window.location.href]}, "*");

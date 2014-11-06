@@ -37,7 +37,8 @@ html, body {
     height: 2em;
     background-color:green;
     position: absolute;
-    transition: opacity 1s;
+    transition-property: opacity, color;
+    transition-duration: 1s;
     text-align: center;
     color: white;
 }
