@@ -16,23 +16,10 @@
   "type": "web",
   "fullscreen": "true",
   "activities": {
-    "open": {
-      "filters": {
-        "type": ["application/epub+zip", "url"]
-      },
-      "url": {
-        "pattern": ".*\\.epub"
-      },
-      "href": "/index.html?action=open",
-      "disposition": "window",
-      "returnValue": "false"
-    },
     "view": {
       "filters": {
-        "type": ["application/epub+zip", "url"]
-      },
-      "url": {
-        "pattern": ".*\\.epub"
+        "type": ["application/epub+zip",
+                 "application/zip"]
       },
       "href": "/index.html?action=view",
       "disposition": "window",

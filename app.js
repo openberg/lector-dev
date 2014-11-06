@@ -27,15 +27,10 @@ bookViewer.notifications.addObserver("chapterchange", function(event) {
   $("menu_top").textContent = "Chapter " + (event.chapter + 1) + "/" + (event.lastChapter + 1);
 });
 
-document.addEventListener("touchmove", function(event) {
-});
-
 if ("mozSetMessageHandler" in navigator) {
-  var onActivity = function(request) {
+  navigator.mozSetMessageHandler('activity', function(request) {
     console.log("Activity request", request);
-  };
-  navigator.mozSetMessageHandler('open', onActivity);
-  navigator.mozSetMessageHandler('view', onActivity);
+  });
 }
 
 function hideMenus() {
