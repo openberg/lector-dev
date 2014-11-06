@@ -139,10 +139,16 @@ window.addEventListener("keypress", function(e) {
 // Touch events
 //
 
+// If `true`, ignore all touch events, typically because
+// we are currently loading a chapter.
+var gIgnoreTouchEvents = false;
 var gCurrentTouchStart = null;
 var gCurrentTouchMove = null;
 var gCurrentTouchAnimating = false;
 window.addEventListener("touchmove", function(event) {
+  if (gIgnoreTouchEvents) {
+    return;
+  }
   if (event.touches.length > 1) {
     // This is a multi-touch event, so probably the user
     // is zooming. Let's not interfere with it.
@@ -169,6 +175,9 @@ window.addEventListener("touchmove", function(event) {
   });
 });
 window.addEventListener("touchstart", function(event) {
+  if (gIgnoreTouchEvents) {
+    return;
+  }
   console.log("touchstart", event);
   if (event.touches.length > 1) {
     // This is a multi-touch event, so probably the user
@@ -178,6 +187,9 @@ window.addEventListener("touchstart", function(event) {
   gCurrentTouchStart = event;
 });
 window.addEventListener("touchend", function(event) {
+  if (gIgnoreTouchEvents) {
+    return;
+  }
   console.log("touchend", event);
   if (event.touches.length >= 1) {
     // This is a multi-touch event, so probably the user
@@ -251,9 +263,13 @@ function scrollBy(deltaPages) {
   if (nextPage < 0) {
     console.log("Next page is < 0");
     window.parent.postMessage({method: "changeChapterBy", args: [-1]}, "*");
+    // Ignore any further scrolling.
+    gIgnoreTouchEvents = true;
     return;
   } else if (nextPage * width >= scrollMaxX) {
     window.parent.postMessage({method: "changeChapterBy", args: [1]}, "*");
+    // Ignore any further scrolling.
+    gIgnoreTouchEvents = true;
     return;
   }
   scrollToPage(nextPage);
