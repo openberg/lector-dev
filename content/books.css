@@ -1,3 +1,7 @@
+/**
+ * General CSS file, shared by all platforms.
+ */
+
 html, body {
     width: calc(100% - 1em);
     height: calc(100% - 1em);

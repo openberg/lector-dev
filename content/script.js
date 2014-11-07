@@ -41,9 +41,22 @@ var gInnerHeight = window.innerHeight;
 var gOneEM = parseFloat(getComputedStyle(document.documentElement).fontSize);
 
 /**
+ * The platform. Used to work around bugs.
+ */
+var gBrowser = "any";
+if (navigator.userAgent.contains("Firefox/28.0")) {
+  gBrowser = "b2g1.3";
+}
+
+/**
  * The width of the page, in pixels.
  */
-var gPageWidth = gInnerWidth + pagePadding - 2 * gOneEM;
+var gPageWidth;
+if (gBrowser == "b2g1.3") {
+  gPageWidth = gInnerWidth + pagePadding;
+} else {
+  gPageWidth = gInnerWidth + pagePadding - 2 * gOneEM;
+}
 
 ///////////////
 // Adapting column size
@@ -54,7 +67,11 @@ function setupColumns() {
   gInnerWidth = window.innerWidth;
   gInnerHeight = window.innerHeight;
   gOneEM = parseFloat(getComputedStyle(document.documentElement).fontSize);
-  gPageWidth = gInnerWidth + pagePadding - 2 * gOneEM;
+  if (gBrowser == "b2g1.3") {
+    gPageWidth = gInnerWidth + pagePadding;
+  } else {
+    gPageWidth = gInnerWidth + pagePadding - 2 * gOneEM;
+  }
   var columnWidth = gInnerWidth - gOneEM;
   console.log("Widths", gInnerWidth, pagePadding, gOneEM, gPageWidth, columnWidth);
   var body = document.body;

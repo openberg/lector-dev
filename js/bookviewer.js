@@ -149,19 +149,23 @@ BookViewer.prototype.navigateTo = function(chapter, endOfChapter) {
     this.notifications.notify("chapter:titleavailable", { chapter: this._chapter });
 
     // 1. Inject global book stylesheet
+    // 1.1 The part that is shared by all browsers
     var injectLink = xml.createElement("link");
     injectLink.setAttribute("rel", "stylesheet");
     injectLink.setAttribute("type", "text/css");
     injectLink.setAttribute("href", UrlUtils.toURL("content/books.css").href);
     head.appendChild(injectLink);
 
+    // 1.2 The part specific to some browsers
+    var injectLink2 = xml.createElement("link");
+    injectLink2.setAttribute("rel", "stylesheet");
+    injectLink2.setAttribute("type", "text/css");
+    head.appendChild(injectLink2);
+
     if (navigator.userAgent.contains("Firefox/28.0")) {
-      // Workaround for a bug in Firefox OS 1.3
-      var injectLink2 = xml.createElement("link");
-      injectLink2.setAttribute("rel", "stylesheet");
-      injectLink2.setAttribute("type", "text/css");
       injectLink2.setAttribute("href", UrlUtils.toURL("content/books-b2g13.css").href);
-      head.appendChild(injectLink);
+    } else {
+      injectLink2.setAttribute("href", UrlUtils.toURL("content/books-other.css").href);
     }
 
     // 2. Inject global book scripts
