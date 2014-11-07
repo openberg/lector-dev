@@ -55,10 +55,11 @@ function setupColumns() {
   gInnerHeight = window.innerHeight;
   gOneEM = parseFloat(getComputedStyle(document.documentElement).fontSize);
   gPageWidth = gInnerWidth + pagePadding - 2 * gOneEM;
+  var columnWidth = gInnerWidth - gOneEM;
+  console.log("Widths", gInnerWidth, pagePadding, gOneEM, gPageWidth, columnWidth);
   var body = document.body;
-  body.style.MozColumnWidth = gInnerWidth + "px";
+  body.style.MozColumnWidth = columnWidth + "px";
   body.style.MozColumnGap = pagePadding + "px";
-//  body.style.height = innerHeight + "px";
 }
 
 var BUFFERING_DURATION_MS = 15;
@@ -139,78 +140,113 @@ window.addEventListener("keypress", function(e) {
 // Touch events
 //
 
-// If `true`, ignore all touch events, typically because
-// we are currently loading a chapter.
-var gIgnoreTouchEvents = false;
-var gCurrentTouchStart = null;
-var gCurrentTouchMove = null;
-var gCurrentTouchAnimating = false;
-window.addEventListener("touchmove", function(event) {
-  if (gIgnoreTouchEvents) {
-    return;
-  }
-  if (event.touches.length > 1) {
-    // This is a multi-touch event, so probably the user
-    // is zooming. Let's not interfere with it.
-    return;
-  }
-  event.preventDefault();
-  event.stopPropagation();
-  gCurrentTouchMove = event;
-  if (gCurrentTouchAnimating) {
-    return;
-  }
-  gCurrentTouchAnimating = true;
+var Touch = {
+  // The event emitted when the user put her finger on the screen.
+  _latestTouchStart: null,
+  // The event emitted last time the user moved her finger.
+  _latestTouchMove: null,
+  // `true` if we have scheduled an animation for the next tick and
+  // not started displaying it yet.
+  _isAnimationScheduled: false,
 
-  requestAnimationFrame(function() {
-    gCurrentTouchAnimating = false;
+  /**
+   * The user has just put a finger on the screen.
+   *
+   * Record the position for later.
+   */
+  _ontouchstart: function(event) {
+    if (event.touches.length > 1) {
+      // This is a multi-touch event, so probably the user
+      // is zooming. Let's not interfere with it.
+      return;
+    }
+    this._latestTouchStart = event;
+  },
+  __ontouchstart: null,
 
-    // Let's follow the swipe immediately.
-    var originalX = gCurrentTouchStart.touches[0].clientX;
-    var currentX = gCurrentTouchMove.touches[0].clientX;
+  /**
+   * The user has moved at least one finger on the screen.
+   *
+   * Animate the page to follow the finger.
+   */
+  _ontouchmove: function(event) {
+    if (event.touches.length > 1) {
+      // This is a multi-touch event, so probably the user
+      // is zooming. Let's not interfere with it.
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    this._latestTouchMove = event;
+
+    if (this._isAnimationScheduled) {
+      // We have already scheduled an animation,
+      // scheduling another one would be useless.
+      return;
+    }
+    this._isAnimationScheduled = true;
+
+    requestAnimationFrame(() => {
+      this._isAnimationScheduled = false;
+
+      // Let's follow the swipe immediately.
+      var originalX = this._latestTouchStart.touches[0].clientX;
+      var currentX = this._latestTouchMove.touches[0].clientX;
+      var deltaX = currentX - originalX;
+      var defaultPosition = currentPage * gPageWidth;
+      scrollToPosition(defaultPosition - deltaX);
+    });
+  },
+  __ontouchmove: null,
+
+  /**
+   * The user has released at least one finger on the screen.
+   *
+   * Finish animation, possibly move to the previous/next chapter.
+   */
+  _ontouchend: function (event) {
+    if (event.touches.length >= 1) {
+      // This is a multi-touch event, so probably the user
+      // is zooming. Let's not interfere with it.
+      return;
+    }
+    var originalX = this._latestTouchStart.touches[0].clientX;
+    var currentX = this._latestTouchMove.touches[0].clientX;
+    this._latestTouchStart = null;
+    this._latestTouchEnd = null;
     var deltaX = currentX - originalX;
-    var width = gPageWidth;
-    var defaultPosition = currentPage * width;
-    scrollToPosition(defaultPosition - deltaX);
-  });
-});
-window.addEventListener("touchstart", function(event) {
-  if (gIgnoreTouchEvents) {
-    return;
+    if (Math.abs(deltaX) < gInnerWidth * .1) {
+      // The finger moved by less than 10% of the width of the screen, it's
+      // probably not intended as a swipe, so let's ignore it.
+      scrollBy(0);
+    } else if (deltaX < 0) {
+      scrollBy(1);
+    } else {
+      scrollBy(-1);
+    }
+  },
+  __ontouchend: null,
+
+  /**
+   * Initialize touch screen handling.
+   */
+  init: function() {
+    // Make sure that all event handlers are bound to `this`.
+    for (var k of ["_ontouchstart", "_ontouchmove", "_ontouchend"]) {
+      this["_" + k] = this[k].bind(this);
+    }
+    window.addEventListener("touchstart", this.__ontouchstart);
+    window.addEventListener("touchmove", this.__ontouchmove);
+    window.addEventListener("touchend", this.__ontouchend);
+  },
+
+  uninit: function() {
+    window.removeEventListener("touchstart", this.__ontouchstart);
+    window.removeEventListener("touchmove", this.__ontouchmove);
+    window.removeEventListener("touchend", this.__ontouchend);
   }
-  console.log("touchstart", event);
-  if (event.touches.length > 1) {
-    // This is a multi-touch event, so probably the user
-    // is zooming. Let's not interfere with it.
-    return;
-  }
-  gCurrentTouchStart = event;
-});
-window.addEventListener("touchend", function(event) {
-  if (gIgnoreTouchEvents) {
-    return;
-  }
-  console.log("touchend", event);
-  if (event.touches.length >= 1) {
-    // This is a multi-touch event, so probably the user
-    // is zooming. Let's not interfere with it.
-    return;
-  }
-  var originalX = gCurrentTouchStart.touches[0].clientX;
-  var currentX = gCurrentTouchMove.touches[0].clientX;
-  gCurrentTouchStart = null;
-  gCurrentTouchMove = null;
-  var deltaX = currentX - originalX;
-  if (Math.abs(deltaX) < gInnerWidth * .1) {
-    // The finger moved by less than 10% of the width of the screen, it's
-    // probably not intended as a swipe, so let's ignore it.
-    scrollBy(0);
-  } else if (deltaX < 0) {
-    scrollBy(1);
-  } else {
-    scrollBy(-1);
-  }
-});
+};
+Touch.init();
 
 /////////////
 // Navigation
@@ -223,6 +259,10 @@ window.addEventListener("message", function(e) {
       break;
     case "scrollToPage":
       scrollToPage(e.data.args[0]);
+      break;
+    case "eval":
+      // Cheat mode, useful for debugging
+      console.log("eval", eval(e.data.args[0]));
       break;
     default:
       break;
@@ -264,12 +304,12 @@ function scrollBy(deltaPages) {
     console.log("Next page is < 0");
     window.parent.postMessage({method: "changeChapterBy", args: [-1]}, "*");
     // Ignore any further scrolling.
-    gIgnoreTouchEvents = true;
+    Touch.uninit();
     return;
   } else if (nextPage * width >= scrollMaxX) {
     window.parent.postMessage({method: "changeChapterBy", args: [1]}, "*");
     // Ignore any further scrolling.
-    gIgnoreTouchEvents = true;
+    Touch.uninit();
     return;
   }
   scrollToPage(nextPage);
