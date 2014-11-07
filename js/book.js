@@ -138,18 +138,32 @@ Book.Resource.prototype = {
    * @return Promise<XMLDocument>
    */
   asXML: function(key, autorelease = true) {
+    return this._asXHR(key, "xml", "text/xml", "responseXML", autorelease);
+  },
+
+  /**
+   * Parse the entry as a HTML document.
+   *
+   * @return Promise<Document>
+   */
+  asDocument:function(key, autorelease = true) {
+    return this._asXHR(key, "document", "text/html", "responseXML", autorelease);
+  },
+
+  _asXHR: function(key, responseType, mimeType, field, autorelease = true) {
     var promiseURL = this.asObjectURL(key);
     var promise = new Promise(resolve =>
       promiseURL.then(url => {
         var parser = new XMLHttpRequest();
-        parser.responseType = "xml";
         parser.addEventListener("loadend", (e) => {
           if (autorelease) {
             this.release(key);
           }
-          resolve(parser.responseXML);
+          resolve(parser[field]);
         });
         parser.open("GET", url);
+        parser.responseType = responseType;
+        parser.overrideMimeType(mimeType);
         parser.send();
     }));
     return promise;

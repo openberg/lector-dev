@@ -98,17 +98,20 @@ BookViewer.prototype.changePageBy = function(delta) {
  * @return {Promise} A Promise fulfilled once navigation is complete.
  */
 BookViewer.prototype.navigateTo = function(chapter, endOfChapter) {
+  console.log("navigateTo", chapter, endOfChapter);
   if (typeof chapter != "number" && typeof chapter != "string") {
     throw new TypeError("Expected a number");
   }
   var promise = this._book.init();
   var chapterResources = null;
   promise = promise.then(() => {
-    var entry;
+    console.log("navigateTo", "Book is initialized");
+    var entry = null;
     var num = -1;
     if (typeof chapter == "number") {
       entry = this._book.chapters[chapter];
       num = chapter;
+      console.log("navigateTo", "chapter is a number");
     } else {
       entry = this._book.getResource(chapter);
       var chapters = this._book.chapters;
@@ -119,7 +122,9 @@ BookViewer.prototype.navigateTo = function(chapter, endOfChapter) {
           break;
         }
       }
+      console.log("navigateTo", "chapter is a key");
     }
+    console.log("navigateTo", "Found entry", entry);
     if (!entry) {
       throw new Error("Could not find chapter " + chapter);
     }
@@ -129,9 +134,11 @@ BookViewer.prototype.navigateTo = function(chapter, endOfChapter) {
       num: num,
     };
     this.notifications.notify("chapter:exit", { chapter: this._chapter });
-    return entry.asXML(this, true);
+    console.log("navigateTo", "Opening document", entry);
+    return entry.asDocument(this, true);
   });
   promise = promise.then(xml => {
+    console.log("navigateTo", "Opened document", xml);
     //
     // Adapt XML document for proper display.
     //
@@ -147,6 +154,15 @@ BookViewer.prototype.navigateTo = function(chapter, endOfChapter) {
     injectLink.setAttribute("type", "text/css");
     injectLink.setAttribute("href", UrlUtils.toURL("content/books.css").href);
     head.appendChild(injectLink);
+
+    if (navigator.userAgent.contains("Firefox/28.0")) {
+      // Workaround for a bug in Firefox OS 1.3
+      var injectLink2 = xml.createElement("link");
+      injectLink2.setAttribute("rel", "stylesheet");
+      injectLink2.setAttribute("type", "text/css");
+      injectLink2.setAttribute("href", UrlUtils.toURL("content/books-b2g13.css").href);
+      head.appendChild(injectLink);
+    }
 
     // 2. Inject global book scripts
     var injectScript = xml.createElement("script");
