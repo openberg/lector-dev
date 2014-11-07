@@ -6,7 +6,6 @@ html, body {
     width: calc(100% - 1em);
     height: calc(100% - 1em);
     margin: 0;
-    padding: .5em !important;
     max-width: none;
 }
 
