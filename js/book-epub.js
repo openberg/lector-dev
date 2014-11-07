@@ -143,17 +143,20 @@ BookEpub.prototype = {
   },
 
   getResource: function(key) {
+    console.log("getResource", key, typeof key);
     if (typeof key == "number") {
       return this._chapters[key];
     } else if (typeof key == "string") {
       if (this._resources.has(key)) {
         return this._resources.get(key);
       }
-      var entry = this._archive.entries.get(key);
+      var entry =
+        this._archive.entries.get(key)
+        || this._archive.entries.get(this._resolveTo + "/" + key);
       if (!entry) {
         return null;
       }
-      var resource = new Book.Resource(entry.filename, entry);
+      var resource = new Book.Resource(key, entry);
       this._resources.set(key, resource);
       return resource;
     } else {

@@ -67,7 +67,7 @@ Book.prototype = {
  * A resource of the book, such as a page, image, sound,
  * script, etc.
  *
- * @param {string} name A name, used for debugging.
+ * @param {string} name A unique name, used for comparing.
  * @param {{asObjectURL: function()}} An object that may provide the data
  * as an object URL.
  * @constructor
@@ -81,8 +81,8 @@ Book.Resource = function(name, provider) {
 Book.Resource.DELAY_BEFORE_UNLOAD_MS = 1000;
 Book.Resource.prototype = {
   _acquire: function(key) {
-    if (!key) {
-      throw new TypeError("_acquire expected a key");
+    if (key == null) {
+      throw new TypeError("_acquire expected a key, got " + key);
     }
     var clients = this._clients.get(key);
     if (!clients) {
@@ -92,7 +92,7 @@ Book.Resource.prototype = {
     }
   },
   release: function(key) {
-    if (!key) {
+    if (key == null) {
       throw new TypeError("release expected a key");
     }
     var clients = this._clients.get(key);
