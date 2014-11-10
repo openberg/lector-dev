@@ -92,16 +92,22 @@ window.addEventListener("DOMContentLoaded", function observer() {
   setupColumns();
 });
 
+
+/**
+ * Finish setting up transitions, start at the expected page
+ * in the chapter.
+ *
+ * @param {string} position, one of "begin" or "end".
+ */
 window.Lector.enterChapter = function(position) {
-  // Start from an imaginary page.
-  var imaginaryStartPage = position == "end" ? 1000 : -1;
-  scrollBy(imaginaryStartPage, false);
-
-  // Now activate animations and scroll to the actual page.
-  document.body.style.transition = "transform .3s";
-
-  var realStartPage = position == "end" ? Infinity : 0;
-  scrollToPage(realStartPage);
+  var startPage = position == "end" ? Infinity : 0;
+  scrollToPage(startPage);
+  window.requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => {
+      // Only now cause smooth scrolling between pages.
+      document.body.style.transition = "transform .3s";
+    });
+  });
 };
 
 
