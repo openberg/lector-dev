@@ -16,9 +16,6 @@ body {
     -webkit-column-fill: auto;
     -webkit-column-gap: 40px;
 
-/* Transition while turning pages. */
-    transition: transform .3s;
-
 /* Nice justification for the book. */
     text-align: justify;
     hyphens: auto;

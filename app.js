@@ -23,10 +23,10 @@ bookViewer.notifications.addObserver("page:changing", function(event) {
   $("menu_bottom").textContent = "Page " + (event.page + 1) + "/" + (event.lastPage + 1) + " in document";
 });
 bookViewer.notifications.addObserver("chapter:exit", function(event) {
-  Menus.top.showText("(Loading)");
+  Menus.bottom.showText("(Loading)");
 });
 bookViewer.notifications.addObserver("chapter:titleavailable", function(event) {
-  Menus.top.showText(event.chapter.title + " (Loading)");
+  Menus.top.showText(event.chapter.title);
 });
 bookViewer.notifications.addObserver("chapter:enter", function(event) {
   Menus.top.showText(event.chapter.title);
@@ -146,6 +146,10 @@ var Menus = {
     this.top.show();
     this.bottom.show();
   },
+  hide: function() {
+    this.top.hide();
+    this.bottom.hide();
+  },
   autoHide: function() {
     this.top.autoHide();
     this.bottom.autoHide();
@@ -167,12 +171,16 @@ var params = new URL(window.location).searchParams;
 console.log("Params", params, new URL(window.location));
 if (params) {
   try {
-    if (params.has("book")) {
-      bookURL = UrlUtils.toURL(params.get("book"));
-    }
+    if (params.get("action") == "view") {
 
-    if (params.has("chapter")) {
-      chapterNum = Number.parseInt(params.get("chapter"));
+    } else {
+      if (params.has("book")) {
+        bookURL = UrlUtils.toURL(params.get("book"));
+      }
+
+      if (params.has("chapter")) {
+        chapterNum = Number.parseInt(params.get("chapter"));
+      }
     }
   } catch (ex) {
     console.error(ex);

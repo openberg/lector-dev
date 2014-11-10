@@ -88,9 +88,22 @@ window.addEventListener("resize", function() {
   resizing = setTimeout(setupColumns, BUFFERING_DURATION_MS);
 });
 window.addEventListener("DOMContentLoaded", function observer() {
-  setupColumns();
   window.removeEventListener("DOMContentLoaded", observer);
+  setupColumns();
 });
+
+window.Lector.enterChapter = function(position) {
+  // Start from an imaginary page.
+  var imaginaryStartPage = position == "end" ? 1000 : -1;
+  scrollBy(imaginaryStartPage, false);
+
+  // Now activate animations and scroll to the actual page.
+  document.body.style.transition = "transform .3s";
+
+  var realStartPage = position == "end" ? Infinity : 0;
+  scrollToPage(realStartPage);
+};
+
 
 /**
  * Configure the font size.
@@ -289,6 +302,7 @@ window.addEventListener("message", function(e) {
 function scrollToPosition(position) {
   var translation = "translateX(" + (-1 * position) + "px)";
   console.log("Translation", translation);
+  console.log("scrolling to position", document.body.style.transform, translation);
   document.body.style.transform = translation;
 }
 
@@ -313,21 +327,23 @@ window.Lector.scrollToPage = scrollToPage;
  * @param {number} deltaPages The number of pages to scroll.
  * May be negative to scroll backwards. Ignored if 0.
  */
-function scrollBy(deltaPages) {
+function scrollBy(deltaPages, mayChangeChapter = true) {
   var scrollMaxX = document.body.scrollWidth;
   var nextPage = currentPage + deltaPages;
   var width = gPageWidth;
-  if (nextPage < 0) {
-    console.log("Next page is < 0");
-    window.parent.postMessage({method: "changeChapterBy", args: [-1]}, "*");
-    // Ignore any further scrolling.
-    Touch.uninit();
-    return;
-  } else if (nextPage * width >= scrollMaxX) {
-    window.parent.postMessage({method: "changeChapterBy", args: [1]}, "*");
-    // Ignore any further scrolling.
-    Touch.uninit();
-    return;
+  if (mayChangeChapter) {
+    if (nextPage < 0) {
+      console.log("Next page is < 0");
+      window.parent.postMessage({method: "changeChapterBy", args: [-1]}, "*");
+      // Ignore any further scrolling.
+      Touch.uninit();
+      return;
+    } else if (nextPage * width >= scrollMaxX) {
+      window.parent.postMessage({method: "changeChapterBy", args: [1]}, "*");
+      // Ignore any further scrolling.
+      Touch.uninit();
+      return;
+    }
   }
   scrollToPage(nextPage);
 }

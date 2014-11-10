@@ -179,17 +179,13 @@ BookViewer.prototype.navigateTo = function(chapter, endOfChapter) {
     if (endOfChapter) {
       // Go to the end of the chapter without triggering an animation
       // that goes through all pages of the chapter.
-      var injectStyle = xml.createElement("style");
-      injectStyle.textContent = "body { transform: translateX(1000000px); transition-property: '';}";
-      head.appendChild(injectStyle);
-
       injectScript2 = xml.createElement("script");
       injectScript2.setAttribute("type", "text/javascript");
-      injectScript2.textContent = "window.addEventListener('load', function() {document.body.transitionProperty = 'transform'; window.Lector.scrollToPage(Infinity)});";
+      injectScript2.textContent = "window.addEventListener('load', function() { window.Lector.enterChapter('end'); });";
     } else {
       injectScript2 = xml.createElement("script");
       injectScript2.setAttribute("type", "text/javascript");
-      injectScript2.textContent = "window.addEventListener('load', function() {if (window.Lector) { window.Lector.scrollToPage(0); } });";
+      injectScript2.textContent = "window.addEventListener('load', function() { window.Lector.enterChapter('start'); });";
     }
     head.appendChild(injectScript2);
 
