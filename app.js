@@ -186,7 +186,10 @@ if (params) {
       }
 
       if (bookURL) {
+        $("loading").classList.remove("hidden");
         bookViewer.open(bookURL, chapterNum).then(null, e => console.error(e));
+      } else {
+        $("click_or_touch_anywhere").classList.remove("hidden");
       }
     }
   } catch (ex) {
@@ -194,8 +197,7 @@ if (params) {
   }
 }
 
-$("file_picker").addEventListener("click", function(e) {
-  console.log("file_picker", e);
+$("welcome").addEventListener("click", function(e) {
   e.stopPropagation();
   $("hidden_file_input").click();
 });
