@@ -16,7 +16,7 @@
   "type": "web",
   "fullscreen": "true",
   "activities": {
-    "view": {
+    "open": {
       "filters": {
         "type": ["application/epub+zip",
                  "application/zip"]

@@ -50,7 +50,7 @@ window.define(function() {
         window.setTimeout(function() {
           try {
             observer(value);
-          } catch(ex if console.error(ex)) {
+          } catch(ex if console.error("Error during notification", event, ex)) {
             // This should never happen.
           }
         });

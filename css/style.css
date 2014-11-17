@@ -58,3 +58,18 @@ html, body {
 .hidden {
     opacity: 0;
 }
+
+.invisible {
+    visibility: hidden;
+}
+
+#hidden_file_input {
+    width: 0;
+    height: 0;
+}
+
+#file_picker {
+  width: 100%;
+  background-color: yellow;
+  z-index: 10;
+}

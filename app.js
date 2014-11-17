@@ -35,6 +35,9 @@ bookViewer.notifications.addObserver("book:open", function(event) {
   console.log("Opened book", event);
   Menus.top.showText(event.book.title);
 });
+bookViewer.notifications.addObserver("book:opening", function(event) {
+  $("contents").classList.remove("invisible");
+});
 if ("mozSetMessageHandler" in navigator) {
   navigator.mozSetMessageHandler('activity', function(request) {
     console.log("Activity request", request);
@@ -165,8 +168,6 @@ Menus.autoHide();
 //
 // Load a book passed as URL.
 //
-var bookURL = UrlUtils.toURL("samples/lector.epub");
-var chapterNum = 0;
 var params = new URL(window.location).searchParams;
 console.log("Params", params, new URL(window.location));
 if (params) {
@@ -174,6 +175,8 @@ if (params) {
     if (params.get("action") == "view") {
 
     } else {
+      var bookURL;
+      var chapterNum = 0;
       if (params.has("book")) {
         bookURL = UrlUtils.toURL(params.get("book"));
       }
@@ -181,15 +184,31 @@ if (params) {
       if (params.has("chapter")) {
         chapterNum = Number.parseInt(params.get("chapter"));
       }
+
+      if (bookURL) {
+        bookViewer.open(bookURL, chapterNum).then(null, e => console.error(e));
+      }
     }
   } catch (ex) {
     console.error(ex);
   }
-
-  bookViewer.open(bookURL).then(
-    bookViewer.navigateTo(chapterNum)
-  ).then(null, e => console.error(e));
 }
+
+$("file_picker").addEventListener("click", function(e) {
+  console.log("file_picker", e);
+  e.stopPropagation();
+  $("hidden_file_input").click();
+});
+$("hidden_file_input").addEventListener("change", function(e) {
+  e.stopPropagation();
+  e.preventDefault();
+  var files = $("hidden_file_input").files;
+  if (!files || files.length == 0) {
+    // No files opened, nothing to do.
+    return;
+  }
+  bookViewer.open(files[0], 0);
+});
 
 /**
  * The file picker.

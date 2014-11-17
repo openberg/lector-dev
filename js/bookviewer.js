@@ -34,6 +34,7 @@ function BookViewer(element) {
     "chapter:titleavailable",
     "chapter:enter",
     "book:open",
+    "book:opening",
   ]);
 
   /**
@@ -66,13 +67,19 @@ BookViewer.prototype = {};
 /**
  * Open a book.
  */
-BookViewer.prototype.open = function(source) {
+BookViewer.prototype.open = function(source, chapter = null) {
   console.log("BookViewer", "opening book", source);
+  this.notifications.notify("book:opening", { source: source });
   this._book = Book.open(source, [BookEpub]);
   var promise = this._book.init();
   promise = promise.then(() => {
     this.notifications.notify("book:open", { book: this._book });
   });
+  if (chapter != null) {
+    promise = promise.then(() => {
+      this.navigateTo(chapter);
+    });
+  }
   return promise;
 };
 
