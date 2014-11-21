@@ -80,6 +80,7 @@ Menus.autoHide();
 //
 var filePicker = new FilePicker($("welcome"), ["application/epub+zip"]);
 filePicker.notifications.addObserver("file:open", event => {
+  console.log("App", "Opening file", event.file);
   var file = event.file;
   var promise = bookViewer.open(file, 0);
   promise = promise.then(null, e => {

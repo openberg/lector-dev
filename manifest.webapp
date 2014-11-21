@@ -11,7 +11,7 @@
     "256": "/img/icon256.png"
   },
   "description": "open-source, open-standards e-Book reader.",
-  "launch_path": "/index.html",
+  "launch_path": "./index.html",
   "default_locale": "en",
   "type": "web",
   "fullscreen": "true",
