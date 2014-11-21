@@ -1,10 +1,11 @@
 window.require(['js/polyfills',
                 'js/book',
                 'js/bookviewer',
+                'js/filepicker',
                 'js/menu',
                 'js/sizewatcher',
                 'js/urlutils'],
-  function(_, Book, BookViewer, Menu, SizeWatcher, UrlUtils) {
+  function(_, Book, BookViewer, FilePicker, Menu, SizeWatcher, UrlUtils) {
 "use strict";
 
 var $ = id => document.getElementById(id);
@@ -77,6 +78,15 @@ Menus.autoHide();
 //
 // Welcome page
 //
+var filePicker = new FilePicker($("welcome"));
+filePicker.notifications.addObserver("file:open", event => {
+  var file = event.file;
+  var promise = bookViewer.open(file, 0);
+  promise = promise.then(null, e => {
+    Menus.bottom.showText("Error while opening book: " + e);
+    console.error(e);
+  });
+});
 $("welcome").addEventListener("click", function(e) {
   e.stopPropagation();
   $("hidden_file_input").click();
@@ -93,11 +103,6 @@ $("hidden_file_input").addEventListener("change", function(e) {
     // No files opened, nothing to do.
     return;
   }
-  var promise = bookViewer.open(files[0], 0);
-  promise = promise.then(null, e => {
-    Menus.bottom.showText("Error while opening book: " + e);
-    console.error(e);
-  });
 
 });
 

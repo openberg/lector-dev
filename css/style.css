@@ -68,9 +68,10 @@ html, body {
     visibility: hidden;
 }
 
-#hidden_file_input {
+.hidden_input_file {
     width: 0;
     height: 0;
+    opacity: 0;
 }
 
 #welcome {
