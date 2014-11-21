@@ -78,7 +78,7 @@ Menus.autoHide();
 //
 // Welcome page
 //
-var filePicker = new FilePicker($("welcome"));
+var filePicker = new FilePicker($("welcome"), ["application/epub+zip"]);
 filePicker.notifications.addObserver("file:open", event => {
   var file = event.file;
   var promise = bookViewer.open(file, 0);
@@ -86,24 +86,6 @@ filePicker.notifications.addObserver("file:open", event => {
     Menus.bottom.showText("Error while opening book: " + e);
     console.error(e);
   });
-});
-$("welcome").addEventListener("click", function(e) {
-  e.stopPropagation();
-  $("hidden_file_input").click();
-});
-$("hidden_file_input").addEventListener("input", function(e) {
-  console.log("Files picked", "input");
-  console.log("Files picked", e);
-});
-$("hidden_file_input").addEventListener("change", function(e) {
-  console.log("Files picked", "change");
-  console.log("Files picked", e, e.files);
-  var files = $("hidden_file_input").files;
-  if (!files || files.length == 0) {
-    // No files opened, nothing to do.
-    return;
-  }
-
 });
 
 //
