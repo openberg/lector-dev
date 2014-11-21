@@ -48,6 +48,14 @@ bookViewer.notifications.addObserver("book:opening:failed", function(event) {
 if ("mozSetMessageHandler" in navigator) {
   navigator.mozSetMessageHandler('activity', function(request) {
     console.log("Activity request", request);
+    console.log("Activity data", JSON.stringify(request.source.data));
+    console.log("App", "Opening file from activity", request.source.name);
+    var file = request.source.data.blob;
+    var promise = bookViewer.open(file, 0);
+    promise = promise.then(null, e => {
+      Menus.bottom.showText("Error while opening book: " + e);
+      console.error(e);
+    });
   });
 }
 
@@ -80,7 +88,7 @@ Menus.autoHide();
 //
 var filePicker = new FilePicker($("welcome"), ["application/epub+zip"]);
 filePicker.notifications.addObserver("file:open", event => {
-  console.log("App", "Opening file", event.file);
+  console.log("App", "Opening file from the file picker", event.file);
   var file = event.file;
   var promise = bookViewer.open(file, 0);
   promise = promise.then(null, e => {
