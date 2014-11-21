@@ -31,7 +31,7 @@ function FilePicker(element) {
       });
       activity.onsuccess = function() {
         console.log("MozActivity", "picked", this.result);
-        
+        this._element.textContent = JSON.stringify(this.result);
       };
     } else {
       input.click();
