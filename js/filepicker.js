@@ -2,6 +2,9 @@ define(["js/notifications"],
   function(Notifications) {
 
 /**
+ * A control used to pick a file.
+ *
+ * @param {Element} element The DOM element
  * @constructor
  */
 function FilePicker(element) {
@@ -16,7 +19,23 @@ function FilePicker(element) {
 
   element.addEventListener("click", e => {
     e.stopPropagation();
-    input.click();
+
+    if ("MozActivity" in window) {
+      // Firefox OS or Android – use an activity,
+      // this will provide better results.
+      var activity = new MozActivity({
+        name: "pick",
+        data: {
+          type: "application/epub+zip"
+        }
+      });
+      activity.onsuccess = function() {
+        console.log("MozActivity", "picked", this.result);
+        
+      };
+    } else {
+      input.click();
+    }
   });
 
   input.addEventListener("change", e => {
