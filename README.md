@@ -10,11 +10,11 @@ Also, OpenBerg Lector has been developed and tested primarily for Firefox and Fi
 
 ## Feedback
 
-At this stage, we need lots of feedback. Please use [the issue tracker](https://github.com/Yoric/lector/issues) to report bugs or request features.
+At this stage, we need lots of feedback. Please use [the issue tracker](https://github.com/openberg/lector/issues) to report bugs or request features.
 
 # Using OpenBerg Lector
 
-Open [OpenBerg Lector](http://yoric.github.io/lector/), click/touch anywhere, pick a file. To change page, use either the keyboard (arrows) or the touchscreen.
+Open [OpenBerg Lector](http://openberg.github.io/lector/), click/touch anywhere, pick a file. To change page, use either the keyboard (arrows) or the touchscreen.
 
 ## Additional notes for Firefox OS
 
