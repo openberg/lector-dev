@@ -31,7 +31,7 @@
       "href": "/index.html?action=view",
       "disposition": "window",
       "returnValue": "false"
-    },
+    }
   },
   "orientation": ["portrait-primary"]
 }

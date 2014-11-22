@@ -86,7 +86,7 @@ Menus.autoHide();
 //
 // Welcome page
 //
-var filePicker = new FilePicker($("welcome"), ["application/epub+zip"]);
+var filePicker = new FilePicker($("pick"), ["application/epub+zip"]);
 filePicker.notifications.addObserver("file:open", event => {
   console.log("App", "Opening file from the file picker", event.file);
   var file = event.file;
@@ -118,13 +118,10 @@ if (params) {
       }
 
       if (bookURL) {
-        $("loading").classList.remove("hidden");
         bookViewer.open(bookURL, chapterNum).then(null, e => {
           Menus.bottom.showText("Error while opening book: " + e);
           console.error(e);
         });
-      } else {
-        $("click_or_touch_anywhere").classList.remove("hidden");
       }
     }
   } catch (ex) {
