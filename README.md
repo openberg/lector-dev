@@ -41,7 +41,7 @@ If you wish to help, take a look at [the dev issue tracker](https://github.com/o
 If you fork OpenBerg Lector, do not forget to initialize submodules:
 
  - git submodule update --init lib/zip.js
- - git submodule update --init lib/promisejs.org
+ - git submodule update --init lib/lie
 
 ## Following
 
