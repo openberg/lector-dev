@@ -88,6 +88,9 @@ ul.library_entries {
 
 li.library_entry {
   width: 100%;
+  max-width: 300px;
+  margin-left: auto;
+  margin-right: auto;
   padding-left: 0;
   padding-right: 0
   padding-bottom: 1em;
