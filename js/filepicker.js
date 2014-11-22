@@ -59,12 +59,14 @@ FilePicker.prototype = {
    * works better than using the default behavior of <input type="file">.
    */
   pickWithActivity: function() {
-    var activity = new MozActivity({
+    var options = {
       name: "pick",
       data: {
         type: "application/*"
       }
-    });
+    };
+    console.log("pickWithActivity", JSON.stringify(options));
+    var activity = new MozActivity(options);
     activity.onsuccess = () => {
       console.log("filepicker", "picked", activity.result);
       this.notifications.notify("file:open", { file: activity.result.blob });
