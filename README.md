@@ -1,6 +1,6 @@
 # About OpenBerg Lector
 
-[OpenBerg Lector](http://yoric.github.io/lector/) is an open-source, cross-platform e-Book reader written in HTML5. You may use it from any computer, without any installation.
+[OpenBerg Lector](http://openberg.github.io/lector/) is an open-source, cross-platform e-Book reader written in HTML5. You may use it from any computer, without any installation.
 
 ## A word of warning
 
