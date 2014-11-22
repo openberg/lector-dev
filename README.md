@@ -38,12 +38,11 @@ All development takes place [here](https://github.com/openberg/lector-dev).
 
 If you wish to help, take a look at [the dev issue tracker](https://github.com/openberg/lector-dev/issues) or get in touch [over IRC](irc://irc.mozilla.org/#lector) (irc.mozilla.org, channel #lector).
 
-If you fork OpenBerg Lector, do not forget to initialize submodules:
+OpenBerg Lector uses gitsubmodules. To fork it:
 
- - git submodule update --init lib/zip.js
- - git submodule update --init lib/lie
+ ````git clone --recursive https://github.com/openberg/lector-dev````
 
-## Following
+# Following us
 
 Follow us [on Twitter](https://twitter.com/hashtag/openberglector).
 
