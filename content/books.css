@@ -3,8 +3,8 @@
  */
 
 html, body {
-    width: calc(100% - 1em);
-    height: calc(100% - 1em);
+    width: calc(100% - 4em);
+    height: calc(100% - 2em);
     margin: 0;
     max-width: none;
 }
@@ -12,9 +12,15 @@ html, body {
 body {
 /* Support pages as columns. */
     -moz-column-fill: auto;
-    -moz-column-gap: 40px;
+    -moz-column-gap: 8em;
+    -moz-column-count: 1;
+
     -webkit-column-fill: auto;
-    -webkit-column-gap: 40px;
+    -webkit-column-gap: 2em;
+    -webkit-column-count: 1;
+
+    padding-left: 4em !important;
+    padding-right: 0 !important;
 
 /* Nice justification for the book. */
     text-align: justify;

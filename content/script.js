@@ -13,7 +13,7 @@ window.Lector = {};
 /**
  * The number of pixels between two pages.
  */
-var pagePadding = 40;
+//var pagePadding = 40;
 
 /**
  * The number of the current page inside the chapter,
@@ -27,6 +27,7 @@ var currentPage = 0;
  * for speed.
  */
 var gInnerWidth = window.innerWidth;
+console.log("Inner width", gInnerWidth);
 
 /**
  * The height of the contents of the window.
@@ -38,25 +39,8 @@ var gInnerHeight = window.innerHeight;
 /**
  * The size of 1em, in pixels.
  */
-var gOneEM = parseFloat(getComputedStyle(document.documentElement).fontSize);
+//var gOneEM = parseFloat(getComputedStyle(document.documentElement).fontSize);
 
-/**
- * The platform. Used to work around bugs.
- */
-var gBrowser = "any";
-if (navigator.userAgent.contains("Firefox/28.0")) {
-  gBrowser = "b2g1.3";
-}
-
-/**
- * The width of the page, in pixels.
- */
-var gPageWidth;
-if (gBrowser == "b2g1.3") {
-  gPageWidth = gInnerWidth + pagePadding;
-} else {
-  gPageWidth = gInnerWidth + pagePadding - 2 * gOneEM;
-}
 
 ///////////////
 // Adapting column size
@@ -66,6 +50,7 @@ function setupColumns() {
   console.log("Setting up columns", document.body, window);
   gInnerWidth = window.innerWidth;
   gInnerHeight = window.innerHeight;
+/*
   gOneEM = parseFloat(getComputedStyle(document.documentElement).fontSize);
   if (gBrowser == "b2g1.3") {
     gPageWidth = gInnerWidth + pagePadding;
@@ -77,6 +62,7 @@ function setupColumns() {
   var body = document.body;
   body.style.MozColumnWidth = columnWidth + "px";
   body.style.MozColumnGap = pagePadding + "px";
+*/
 }
 
 var BUFFERING_DURATION_MS = 15;
@@ -229,7 +215,7 @@ var Touch = {
       var originalX = this._latestTouchStart.touches[0].clientX;
       var currentX = this._latestTouchMove.touches[0].clientX;
       var deltaX = currentX - originalX;
-      var defaultPosition = currentPage * gPageWidth;
+      var defaultPosition = currentPage * gInnerWidth;
       scrollToPosition(defaultPosition - deltaX);
     });
   },
@@ -314,7 +300,7 @@ function scrollToPosition(position) {
 
 function scrollToPage(where) {
   console.log("scrollToPage", where);
-  var width = gPageWidth;
+  var width = gInnerWidth;
   var scrollMaxX = document.body.scrollWidth;
   var lastPage = Math.floor(scrollMaxX / width);
   if (where == Infinity) {
@@ -336,7 +322,7 @@ window.Lector.scrollToPage = scrollToPage;
 function scrollBy(deltaPages, mayChangeChapter = true) {
   var scrollMaxX = document.body.scrollWidth;
   var nextPage = currentPage + deltaPages;
-  var width = gPageWidth;
+  var width = gInnerWidth;
   if (mayChangeChapter) {
     if (nextPage < 0) {
       console.log("Next page is < 0");

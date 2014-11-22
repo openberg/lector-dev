@@ -119,4 +119,5 @@ a {
     text-align: center;
     padding-top: 5%;
     background-color: rgb(95%, 95%, 95%);
+    overflow-y: scroll;
 }
