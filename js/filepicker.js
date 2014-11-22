@@ -17,8 +17,8 @@ function FilePicker(element, mimetype) {
    */
   this.notifications = new Notifications(["file:open", "file:nopicker"]);
 
-  if (!Array.isArray(mimetype)) {
-    throw new TypeError("Expected an array of strings");
+  if (typeof mimetype != "string") {
+    throw new TypeError("Expected a string");
   }
 
   // The container element
