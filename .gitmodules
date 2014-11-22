@@ -1,12 +1,6 @@
-[submodule "lib/finderjs"]
-	path = lib/finderjs
-	url = https://github.com/applait/finderjs.git
 [submodule "lib/zip.js"]
 	path = lib/zip.js
 	url = https://github.com/gildas-lormeau/zip.js.git
-[submodule "lib/promisejs.org"]
-	path = lib/promisejs.org
-	url = https://github.com/ForbesLindesay/promisejs.org
 [submodule "lib/lie"]
 	path = lib/lie
 	url = https://github.com/calvinmetcalf/lie
