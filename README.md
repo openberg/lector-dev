@@ -36,7 +36,7 @@ At this stage, we need lots of feedback. Please use [the user issue tracker](htt
 
 All development takes place [here](https://github.com/openberg/lector-dev).
 
-If you wish to help, take a look at [the dev issue tracker](https://github.com/openberg/lector-dev/issues) or get in touch [over IRC](irc://irc.mozilla.org/#lector).
+If you wish to help, take a look at [the dev issue tracker](https://github.com/openberg/lector-dev/issues) or get in touch [over IRC](irc://irc.mozilla.org/#lector) (irc.mozilla.org, channel #lector).
 
 ## Following
 
