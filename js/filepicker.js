@@ -5,10 +5,10 @@ define(["js/notifications"],
  * A control used to pick a file.
  *
  * @param {Element} element The DOM element to use for the control.
- * @param {Array} mimetypes The accepted mime types.
+ * @param {string} mimetype The accepted mimetype.
  * @constructor
  */
-function FilePicker(element, mimetypes) {
+function FilePicker(element, mimetype) {
   /**
    * Instances of FilePicker notify of the following events:
    * - file:open ({file: File}) A file has been picked.
@@ -17,15 +17,15 @@ function FilePicker(element, mimetypes) {
    */
   this.notifications = new Notifications(["file:open", "file:nopicker"]);
 
-  if (!Array.isArray(mimetypes)) {
+  if (!Array.isArray(mimetype)) {
     throw new TypeError("Expected an array of strings");
   }
 
   // The container element
   this._element = element;
 
-  // The list of accepted mime types
-  this._mimetypes = mimetypes;
+  // The accepted mime type
+  this._mimetype = mimetype;
 
   // The DOM Input element. Used only where Web Activities are not supported.
   this._input = null;
@@ -62,10 +62,9 @@ FilePicker.prototype = {
     var options = {
       name: "pick",
       data: {
-        type: "application/*"
+        type: this._mimetype
       }
     };
-    console.log("pickWithActivity", JSON.stringify(options));
     var activity = new MozActivity(options);
     activity.onsuccess = () => {
       console.log("filepicker", "picked", activity.result);
@@ -87,7 +86,7 @@ FilePicker.prototype = {
       this._input.setAttribute("type", "file");
 
       // Set the types of files that it accepts
-      this._input.setAttribute("accept", this._mimetypes.join(", "));
+      this._input.setAttribute("accept", this._mimetype);
       this._input.classList.add("hidden_input_file");
       this._element.appendChild(this._input);
 

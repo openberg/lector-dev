@@ -86,7 +86,7 @@ Menus.autoHide();
 //
 // Welcome page
 //
-var filePicker = new FilePicker($("pick"), ["application/*"]);
+var filePicker = new FilePicker($("pick"), "application/*");
 filePicker.notifications.addObserver("file:open", event => {
   console.log("App", "Opening file from the file picker", event.file);
   var file = event.file;
