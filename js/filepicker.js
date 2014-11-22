@@ -62,7 +62,7 @@ FilePicker.prototype = {
     var activity = new MozActivity({
       name: "pick",
       data: {
-        type: this._mimetypes[0]
+        type: "application/*"
       }
     });
     activity.onsuccess = () => {
