@@ -38,8 +38,15 @@ All development takes place [here](https://github.com/openberg/lector-dev).
 
 If you wish to help, take a look at [the dev issue tracker](https://github.com/openberg/lector-dev/issues) or get in touch [over IRC](irc://irc.mozilla.org/#lector) (irc.mozilla.org, channel #lector).
 
+If you fork OpenBerg Lector, do not forget to initialize submodules:
+
+ - git submodule update --init lib/zip.js
+ - git submodule update --init lib/promisejs.org
+
 ## Following
 
 Follow us [on Twitter](https://twitter.com/hashtag/openberglector).
+
+# That's All Folks
 
 Have fun :)
