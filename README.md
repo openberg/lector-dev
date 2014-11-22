@@ -28,4 +28,18 @@ Out of the box, Android does not provide an application for opening files. I rec
 
 OpenBerg Lector is under heavy development. Expect many new features in upcoming versions.
 
+## Feedback
+
+At this stage, we need lots of feedback. Please use [the user issue tracker](https://github.com/openberg/lector/issues) to report bugs or request features.
+
+## Contributing
+
+All development takes place [here](https://github.com/openberg/lector-dev).
+
+If you wish to help, take a look at [the dev issue tracker](https://github.com/openberg/lector-dev/issues) or get in touch [over IRC](irc://irc.mozilla.org/#lector).
+
+## Following
+
+Follow us [on Twitter](https://twitter.com/hashtag/openberglector).
+
 Have fun :)
