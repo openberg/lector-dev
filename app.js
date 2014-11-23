@@ -12,6 +12,16 @@ var $ = id => document.getElementById(id);
 var windowWatcher = new SizeWatcher(window);
 var bookViewer = new BookViewer($("contents"));
 
+//
+// Make sure that we do not rotate if executed on a phone/tablet,
+// as this kills our layout.
+//
+["lockOrientation", "mozLockOrientation"].forEach(key => {
+  if (key in window.screen) {
+    window.screen[key]("portrait-primary");
+  }
+});
+
 $("arrow_left").addEventListener("click", function() {
   bookViewer.changePageBy(-1);
 });

@@ -11,11 +11,6 @@
 window.Lector = {};
 
 /**
- * The number of pixels between two pages.
- */
-//var pagePadding = 40;
-
-/**
  * The number of the current page inside the chapter,
  * (0-indexed).
  */
@@ -27,7 +22,6 @@ var currentPage = 0;
  * for speed.
  */
 var gInnerWidth = window.innerWidth;
-console.log("Inner width", gInnerWidth);
 
 /**
  * The height of the contents of the window.
@@ -35,12 +29,6 @@ console.log("Inner width", gInnerWidth);
  * for speed.
  */
 var gInnerHeight = window.innerHeight;
-
-/**
- * The size of 1em, in pixels.
- */
-//var gOneEM = parseFloat(getComputedStyle(document.documentElement).fontSize);
-
 
 ///////////////
 // Adapting column size
@@ -50,19 +38,6 @@ function setupColumns() {
   console.log("Setting up columns", document.body, window);
   gInnerWidth = window.innerWidth;
   gInnerHeight = window.innerHeight;
-/*
-  gOneEM = parseFloat(getComputedStyle(document.documentElement).fontSize);
-  if (gBrowser == "b2g1.3") {
-    gPageWidth = gInnerWidth + pagePadding;
-  } else {
-    gPageWidth = gInnerWidth + pagePadding - 2 * gOneEM;
-  }
-  var columnWidth = gInnerWidth - gOneEM;
-  console.log("Widths", gInnerWidth, pagePadding, gOneEM, gPageWidth, columnWidth);
-  var body = document.body;
-  body.style.MozColumnWidth = columnWidth + "px";
-  body.style.MozColumnGap = pagePadding + "px";
-*/
 }
 
 var BUFFERING_DURATION_MS = 15;
@@ -207,6 +182,10 @@ var Touch = {
       return;
     }
     this._isAnimationScheduled = true;
+
+    if (!this._latestTouchStart) {
+      return;
+    }
 
     requestAnimationFrame(() => {
       this._isAnimationScheduled = false;
