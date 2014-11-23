@@ -415,6 +415,7 @@ ChapterContents.prototype = {
       // 1. Inject global book stylesheet
       // 1.1 The part that is shared by all browsers
       var injectLink = xml.createElement("link");
+      injectLink.setAttribute("id", "lector:injectLink");
       injectLink.setAttribute("rel", "stylesheet");
       injectLink.setAttribute("type", "text/css");
       injectLink.setAttribute("href", UrlUtils.toURL("content/books.css").href);
@@ -422,6 +423,7 @@ ChapterContents.prototype = {
 
       // 1.2 The part specific to some browsers
       var injectLink2 = xml.createElement("link");
+      injectLink2.setAttribute("id", "lector:injectLink2");
       injectLink2.setAttribute("rel", "stylesheet");
       injectLink2.setAttribute("type", "text/css");
       head.appendChild(injectLink2);
@@ -437,6 +439,7 @@ ChapterContents.prototype = {
       // 2. Inject global book scripts
       // 2.1 The part that ensures that we can navigate
       var injectScript = xml.createElement("script");
+      injectScript.setAttribute("id", "lector:injectScript");
       injectScript.setAttribute("type", "text/javascript");
       injectScript.setAttribute("src", UrlUtils.toURL("content/script.js").href);
       injectScript.textContent = "// Nothing to see"; // Workaround serializer bug
@@ -446,6 +449,7 @@ ChapterContents.prototype = {
       var injectScript2;
       var position = endOfChapter ? Infinity : 0;
       injectScript2 = xml.createElement("script");
+      injectScript2.setAttribute("id", "lector:injectScript2");
       injectScript2.setAttribute("type", "text/javascript");
       injectScript2.textContent = "window.addEventListener('load', function() { window.Lector.enterChapter(" + position + "); });";
       head.appendChild(injectScript2);
