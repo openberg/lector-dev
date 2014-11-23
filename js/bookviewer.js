@@ -52,11 +52,26 @@ function BookViewer(element) {
    * The book currently displayed.
    */
   this._book = null;
-  this._chapter = null;
 
-  this._currentChapterEntry = null;
+  /**
+   * Public information on the chapter currently displayed.
+   */
+  this._chapterInfo = null;
 
-  this._resourcesByChapter = new Map();
+  /**
+   * The chapters that are currently loaded in memory.
+   *
+   * Keys Object URL
+   * Value: LoadedChapter
+   */
+  this._loadedChapters = new Map();
+
+  /**
+   * The chapter currently loaded.
+   *
+   * @type {LoadedChapter}
+   */
+  this._currentLoadedChapter = null;
 
   // Handle messages sent from the book itself.
   window.addEventListener("message", e => this._handleMessage(e));
@@ -112,13 +127,15 @@ BookViewer.prototype.changePageBy = function(delta) {
  * in the book.
  * @return {Promise} A Promise fulfilled once navigation is complete.
  */
-BookViewer.prototype.navigateTo = function(chapter, endOfChapter) {
+BookViewer.prototype.navigateTo = function(chapter, endOfChapter = false) {
   console.log("navigateTo", chapter, endOfChapter);
   if (typeof chapter != "number" && typeof chapter != "string") {
     throw new TypeError("Expected a number");
   }
-  var promise = this._book.init();
-  var chapterResources = null;
+
+  // Before proceeding, make sure that the book is fully initialized.
+  var promise = this._book.init(endOfChapter);
+
   promise = promise.then(() => {
     console.log("navigateTo", "Book is initialized");
     var entry = null;
@@ -130,12 +147,9 @@ BookViewer.prototype.navigateTo = function(chapter, endOfChapter) {
     } else {
       entry = this._book.getResource(chapter);
       var chapters = this._book.chapters;
-      for (var i = 0; num < chapters.length; ++num) {
-        var resource = this._book.chapters[i];
-        if (entry === resource) {
-          num = i;
-          break;
-        }
+      num = chapters.indexOf(entry);
+      if (num == -1) {
+        throw new Error("Could not find chapter");
       }
       console.log("navigateTo", "chapter is a key");
     }
@@ -143,186 +157,61 @@ BookViewer.prototype.navigateTo = function(chapter, endOfChapter) {
     if (!entry) {
       throw new Error("Could not find chapter " + chapter);
     }
-    this._currentChapterEntry = entry;
-    this._chapter = {
+    this._chapterInfo = {
       title: null,
       num: num,
     };
-    this.notifications.notify("chapter:exit", { chapter: this._chapter });
-    console.log("navigateTo", "Opening document", entry);
-    return entry.asDocument(this, true);
+    this.notifications.notify("chapter:exit", { chapter: this._chapterInfo });
+    console.log("BookViewer", "navigateTo", "Opening document", entry);
+    this._currentLoadedChapter = new LoadedChapter(entry, this._book);
+    return this._currentLoadedChapter.init(endOfChapter);
   });
-  promise = promise.then(xml => {
-    console.log("navigateTo", "Opened document", xml);
-    //
-    // Adapt XML document for proper display.
-    //
-    var head = xml.querySelector("html > head");
-    console.log("Chapter init", 1);
-
-    this._chapter.title = head.querySelector("title").textContent;
-    this.notifications.notify("chapter:titleavailable", { chapter: this._chapter });
-
-    // 1. Inject global book stylesheet
-    // 1.1 The part that is shared by all browsers
-    var injectLink = xml.createElement("link");
-    injectLink.setAttribute("rel", "stylesheet");
-    injectLink.setAttribute("type", "text/css");
-    injectLink.setAttribute("href", UrlUtils.toURL("content/books.css").href);
-    head.appendChild(injectLink);
-
-    // 1.2 The part specific to some browsers
-    var injectLink2 = xml.createElement("link");
-    injectLink2.setAttribute("rel", "stylesheet");
-    injectLink2.setAttribute("type", "text/css");
-    head.appendChild(injectLink2);
-
-    if (navigator.userAgent.contains("Firefox/28.0")) {
-      injectLink2.setAttribute("href", UrlUtils.toURL("content/books-b2g13.css").href);
-    } else {
-      injectLink2.setAttribute("href", UrlUtils.toURL("content/books-other.css").href);
-    }
-
-    // 2. Inject global book scripts
-    var injectScript = xml.createElement("script");
-    injectScript.setAttribute("type", "text/javascript");
-    injectScript.setAttribute("src", UrlUtils.toURL("content/script.js").href);
-    injectScript.textContent = "// Nothing to see"; // Workaround serializer bug
-    head.appendChild(injectScript);
-
-    var injectScript2;
-    if (endOfChapter) {
-      // Go to the end of the chapter without triggering an animation
-      // that goes through all pages of the chapter.
-      injectScript2 = xml.createElement("script");
-      injectScript2.setAttribute("type", "text/javascript");
-      injectScript2.textContent = "window.addEventListener('load', function() { window.Lector.enterChapter('end'); });";
-    } else {
-      injectScript2 = xml.createElement("script");
-      injectScript2.setAttribute("type", "text/javascript");
-      injectScript2.textContent = "window.addEventListener('load', function() { window.Lector.enterChapter('start'); });";
-    }
-    head.appendChild(injectScript2);
-
-    // 3. Rewrite internal links
-    // (scripts, stylesheets, etc.)
-    var resources = [];
-    var generateLink = (node, attribute) => {
-      var href = node.getAttribute(attribute);
-      console.log("Generating link for", node, attribute, href);
-      if (!href) {
-        // No link at all, e.g. anchors, inline scripts.
-        return;
-      }
-      try {
-        new URL(href);
-        // If we reach this point, the link is absolute, we have
-        // nothing to do.
-        return;
-      } catch (ex) {
-        // Link is relative, we need to rewrite it and generate
-        // a URL for its contents.
-      }
-      var resource = this._book.getResource(href);
-      if (!resource) {
-        console.log("Could not find resource for", resource);
-        return;
-      }
-      var promise = resource.asObjectURL(chapter);
-      promise = promise.then(url => {
-        node.setAttribute(attribute, url);
-        return resource;
-      });
-      resources.push(promise);
-    };
-    [...xml.querySelectorAll("html > head > link")].forEach(link => {
-      if (link.getAttribute("rel") != "stylesheet") {
-        return;
-      }
-      generateLink(link, "href");
-    });
-    [...xml.querySelectorAll("html > body img")].forEach(img => {
-      generateLink(img, "src");
-      // Nicety hack: images with width="100%" or height="100%" are bound
-      // to break. Let's get rid of these attributes.
-      if (img.getAttribute("width") == "100%") {
-        img.removeAttribute("width");
-      }
-      if (img.getAttribute("height") == "100%") {
-        img.removeAttribute("height");
-      }
-    });
-    [...xml.querySelectorAll("html > body iframe")].forEach(iframe => {
-      generateLink(iframe, "src");
-    });
-    [...xml.querySelectorAll("html > head script")].forEach(script => {
-      generateLink(script, "src");
-    });
-    [...xml.querySelectorAll("html > body a")].forEach(a => {
-      console.log("Rewriting link", a);
-      var href = a.getAttribute("href");
-      if (!href || href.startsWith("#") || href.startsWith("javascript") || href.contains("://")) {
-        // Not a link internal to the book.
-        return;
-      }
-      // At this stage, we assume that this is a link internal to the book.
-      // We need to turn it into a script.
-      a.setAttribute("href", "javascript:window.Lector.goto('" + href + "');");
-    });
-
-    return Promise.all(resources).then(resources => {
-      console.log("All resources are now available", resources);
-      chapterResources = resources;
-      return Promise.resolve(xml);
-    });
+  promise = promise.then(() => {
+    console.log("BookViewer", "navigateTo", "Chapter initialized", this._currentLoadedChapter);
+    return this._currentLoadedChapter.asURL();
   });
-
-  // Serialie document back to an object URL, and pass it
-  // to the iframe.
-  promise = promise.then(xml => {
-    return Promise.resolve(new XMLSerializer().serializeToString(xml));
-  });
-  promise = promise.then(source => {
-    return Promise.resolve(new TextEncoder().encode(source));
-  });
-  promise = promise.then(encoded => {
-    var blob = new Blob([encoded], { type: "text/html" });
-    var url = URL.createObjectURL(blob);
-    console.log("Associating resources", chapterResources, "to url", url);
-    this._resourcesByChapter.set(url, { key: chapter, resources: chapterResources});
+  promise = promise.then(url => {
+    console.log("BookViewer", "navigateTo", "Got URL for chapter", url);
+    this._loadedChapters.set(url, this._currentLoadedChapter);
     this._iframe.setAttribute("src", url);
-    URL.revokeObjectURL(url);
   });
-
   return promise.then(null, function(err) {
-    console.error("Error in navigateTo", err);
+    console.error("Error in BookViewer.prototype.navigateTo", err);
   });
 };
 
+/**
+ * Move forwards/backwards by a number of chapters.
+ *
+ * @param {number} delta The number of chapters by which to move.
+ *
+ * @return {Promise} A promise resolved once loading of the chapter
+ * by the iframe has *started*.
+ */
 BookViewer.prototype.changeChapterBy = function(delta) {
+  console.log("BookViewer", "changeChapterBy", delta);
   var promise = new Promise(resolve => resolve(this._book.chapters));
-  promise = promise.then(chapters => {
-    for (var i = 0; i < chapters.length; ++i) {
-      console.log("Comparing", chapters[i], this._currentChapterEntry);
-      if (chapters[i] == this._currentChapterEntry) {
-        return this.navigateTo(i + delta, delta == -1);
-      }
+  var currentChapterEntry = this._currentLoadedChapter.entry;
+  promise = promise.then(chapters =>
+    chapters.indexOf(currentChapterEntry)
+  );
+  promise = promise.then(index => {
+    if (index == -1) {
+      throw new Error("Could not find chapter");
     }
-    throw new Error("Could not find chapter");
+    return this.navigateTo(index + delta, delta == -1);
   });
+  return promise;
 };
 
 /**
  * Revoke any object URL that may have been left in memory by the previous load.
  */
 BookViewer.prototype._cleanup = function(chapterURL) {
-  console.log("Cleaning up resources for chapter", chapterURL);
-  var {key, resources} = this._resourcesByChapter.get(chapterURL);
-  for (var object of resources) {
-    console.log("Revoking", object);
-    object.release(key);
-  }
-  this._resourcesByChapter.delete(chapterURL);
+  console.log("BookViewer", "_cleanup", chapterURL);
+  var resources = this._loadedChapters.get(chapterURL);
+  resources.dispose();
+  this._loadedChapters.delete(chapterURL);
 };
 
 /**
@@ -350,7 +239,7 @@ BookViewer.prototype._handleMessage = function(e) {
     this.notifications.notify("page:changing", data.args[0]);
     break;
   case "load":
-    this.notifications.notify("chapter:enter", { chapter: this._chapter });
+    this.notifications.notify("chapter:enter", { chapter: this._chapterInfo });
     break;
   default:
     console.error("Unknwon message", data.method);
@@ -387,7 +276,7 @@ Object.defineProperty(BookViewer.prototype, "book", {
 
 Object.defineProperty(BookViewer.prototype, "chapter", {
   get: function() {
-    return this._chapter;
+    return this._chapterInfo;
   }
 });
 
@@ -414,6 +303,262 @@ BookViewer.prototype._keyboardNavigation = function(code) {
       break;
     default:
       break;
+  }
+};
+
+/**
+ * A chapter loaded in memory, including both the html document
+ * and the underlying resources.
+ *
+ * Once you are done using a LoadedChapter, do not forget to
+ * call method `dispose`.
+ *
+ * @param {Book.Resource} entry The entry holding the raw
+ * data for the chapter.
+ * @param {Book} book The book containing the chapter.
+ */
+function LoadedChapter(entry, book) {
+  /**
+   * The entry holding the raw data for the chapter.
+   *
+   * @type {Book.Entry}
+   */
+  this._entry = entry;
+
+  /**
+   * The book containing the chapter.
+   *
+   * @type {Book}
+   */
+  this._book = book;
+
+  /**
+   * The title of the chapter.
+   *
+   * @type {string}
+   */
+  this._title = null;
+
+  /**
+   * The resources used by this chapter.
+   *
+   * @type {Array<Book.Resource|object URL>}
+   */
+  this._resources = [entry];
+
+  /**
+   * `true` once the chapter is initialized.
+   */
+  this._initialized = false;
+}
+LoadedChapter.prototype = {
+  /**
+   * The entry holding the raw data for the chapter.
+   *
+   * @type {Book.Entry}
+   */
+  get entry() {
+    return this._entry;
+  },
+
+  /**
+   * Initialize the chapter.
+   *
+   * Parse the html document, inject the style as well as
+   * the code necessary for reading through, rewrite any
+   * image, link, etc.
+   *
+   * @return {Promise}
+   */
+  init: function(endOfChapter) {
+    if (typeof endOfChapter != "boolean") {
+      throw new TypeError("Expected a boolean");
+    }
+    if (this._initialized) {
+      throw new Error("Chapter already initialized");
+    }
+    var promise = this._entry.asDocument(this, true);
+    promise = promise.then(xml => {
+      console.log("LoadedChapter", "Opened document", xml);
+
+      //
+      // Adapt XML document for proper display.
+      //
+      var head = xml.querySelector("html > head");
+
+      this._title = head.querySelector("title").textContent;
+
+      // 1. Inject global book stylesheet
+      // 1.1 The part that is shared by all browsers
+      var injectLink = xml.createElement("link");
+      injectLink.setAttribute("rel", "stylesheet");
+      injectLink.setAttribute("type", "text/css");
+      injectLink.setAttribute("href", UrlUtils.toURL("content/books.css").href);
+      head.appendChild(injectLink);
+
+      // 1.2 The part specific to some browsers
+      var injectLink2 = xml.createElement("link");
+      injectLink2.setAttribute("rel", "stylesheet");
+      injectLink2.setAttribute("type", "text/css");
+      head.appendChild(injectLink2);
+
+      if (navigator.userAgent.contains("Firefox/28.0")) {
+        // Firefox 28 / Firefox OS 1.3
+        injectLink2.setAttribute("href", UrlUtils.toURL("content/books-b2g13.css").href);
+      } else {
+        // Other browsers
+        injectLink2.setAttribute("href", UrlUtils.toURL("content/books-other.css").href);
+      }
+
+      // 2. Inject global book scripts
+      // 2.1 The part that ensures that we can navigate
+      var injectScript = xml.createElement("script");
+      injectScript.setAttribute("type", "text/javascript");
+      injectScript.setAttribute("src", UrlUtils.toURL("content/script.js").href);
+      injectScript.textContent = "// Nothing to see"; // Workaround serializer bug
+      head.appendChild(injectScript);
+
+      // 2.2 The part that puts us in the right position
+      var injectScript2;
+      if (endOfChapter) {
+        // Go to the end of the chapter without triggering an animation
+        // that goes through all pages of the chapter.
+        injectScript2 = xml.createElement("script");
+        injectScript2.setAttribute("type", "text/javascript");
+        injectScript2.textContent = "window.addEventListener('load', function() { window.Lector.enterChapter('end'); });";
+      } else {
+        injectScript2 = xml.createElement("script");
+        injectScript2.setAttribute("type", "text/javascript");
+        injectScript2.textContent = "window.addEventListener('load', function() { window.Lector.enterChapter('start'); });";
+      }
+      head.appendChild(injectScript2);
+
+      // 3. Rewrite internal links
+      // (scripts, stylesheets, etc.)
+      var generateLink = (node, attribute) => {
+        var href = node.getAttribute(attribute);
+        console.log("LoadedChapter", "Generating link for", node, attribute, href);
+        if (!href) {
+          console.log("LoadedChapter", "No link for", href);
+          // No link at all, e.g. anchors, inline scripts.
+          return;
+        }
+        try {
+          new URL(href);
+          console.log("LoadedChapter", "Link for", href, "is absolute, nothing to do");
+          // If we reach this point, the link is absolute, we have
+          // nothing to do.
+          return;
+        } catch (ex) {
+          // Link is relative, we need to rewrite it and generate
+          // a URL for its contents.
+        }
+        var resource = this._book.getResource(href);
+        if (!resource) {
+          console.log("LoadedChapter", "Could not find resource for", href);
+          return;
+        } else {
+          console.log("LoadedChapter", "Found a resource for", href);
+        }
+        var promise = resource.asObjectURL(this);
+        promise = promise.then(url => {
+          console.log("LoadedChapter", "Got a url for", href, url);
+          node.setAttribute(attribute, url);
+          return resource;
+        });
+        this._resources.push(promise);
+      };
+      [...xml.querySelectorAll("html > head > link")].forEach(link => {
+        if (link.getAttribute("rel") != "stylesheet") {
+          return;
+        }
+        generateLink(link, "href");
+      });
+      [...xml.querySelectorAll("html > body img")].forEach(img => {
+        generateLink(img, "src");
+        // Nicety hack: images with width="100%" or height="100%" are bound
+        // to break. Let's get rid of these attributes.
+        if (img.getAttribute("width") == "100%") {
+          img.removeAttribute("width");
+        }
+        if (img.getAttribute("height") == "100%") {
+          img.removeAttribute("height");
+        }
+      });
+      [...xml.querySelectorAll("html > body iframe")].forEach(iframe => {
+        generateLink(iframe, "src");
+      });
+      [...xml.querySelectorAll("html > head script")].forEach(script => {
+        generateLink(script, "src");
+      });
+      [...xml.querySelectorAll("html > body a")].forEach(a => {
+        console.log("LoadedChapter", "Rewriting link", a);
+        var href = a.getAttribute("href");
+        if (!href || href.startsWith("#") || href.startsWith("javascript") || href.contains("://")) {
+          // Not a link internal to the book.
+          console.log("LoadedChapter", "External link, nothing to rewrite", a);
+          return;
+        }
+        // At this stage, we assume that this is a link internal to the book.
+        // We need to turn it into a script.
+        a.setAttribute("href", "javascript:window.Lector.goto('" + href + "');");
+      });
+
+      console.log("LoadedChapter", "Waiting until all rewrites are complete");
+      return Promise.all(this._resources).then(() => {
+        console.log("LoadedChapter", "All resources are now available");
+        return Promise.resolve(xml);
+      });
+    });
+
+    // Serialize the document back to an object URL.
+    // We introduce artificial calls to `Promise.resolve` to ensure that
+    // we do not paralyze the main thread for too long.
+    promise = promise.then(xml => {
+      return Promise.resolve(new XMLSerializer().serializeToString(xml));
+    });
+    promise = promise.then(source => {
+      return Promise.resolve(new TextEncoder().encode(source));
+    });
+    promise = promise.then(encoded => {
+      var blob = new Blob([encoded], { type: "text/html" });
+      this._url = URL.createObjectURL(blob);
+      this._initialized = true;
+    });
+    return promise;
+  },
+
+  /**
+   * Return the object URL for this chapter.
+   */
+  asURL: function() {
+    if (!this._initialized) {
+      throw new Error("Not initialized");
+    }
+    return this._url;
+  },
+
+  /**
+   * Cleanup all resources.
+   *
+   * The object becomes unusable.
+   */
+  dispose: function() {
+    if (!this._initialized) {
+      throw new Error("Not initialized");
+    }
+    var promise = Promise.all(this._resources);
+    promise = promise.then(resources => {
+      for (var object of resources) {
+        console.log("LoadedChapter", "Revoking", object);
+        object.release(this);
+      }
+    });
+    promise = promise.then(() => {
+      URL.revokeObjectURL(this._url);
+      this._url = null;
+    });
+    return promise;
   }
 };
 
