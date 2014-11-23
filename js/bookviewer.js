@@ -61,17 +61,17 @@ function BookViewer(element) {
   /**
    * The chapters that are currently loaded in memory.
    *
-   * Keys Object URL
-   * Value: LoadedChapter
+   * Keys: Object URL
+   * Value: ChapterContents
    */
-  this._loadedChapters = new Map();
+  this._chapterContentsByObjectURL = new Map();
 
   /**
    * The chapter currently loaded.
    *
-   * @type {LoadedChapter}
+   * @type {ChapterContents}
    */
-  this._currentLoadedChapter = null;
+  this._currentChapterContents = null;
 
   // Handle messages sent from the book itself.
   window.addEventListener("message", e => this._handleMessage(e));
@@ -163,16 +163,16 @@ BookViewer.prototype.navigateTo = function(chapter, endOfChapter = false) {
     };
     this.notifications.notify("chapter:exit", { chapter: this._chapterInfo });
     console.log("BookViewer", "navigateTo", "Opening document", entry);
-    this._currentLoadedChapter = new LoadedChapter(entry, this._book);
-    return this._currentLoadedChapter.init(endOfChapter);
+    this._currentChapterContents = new ChapterContents(entry, this._book);
+    return this._currentChapterContents.load(endOfChapter);
   });
   promise = promise.then(() => {
-    console.log("BookViewer", "navigateTo", "Chapter initialized", this._currentLoadedChapter);
-    return this._currentLoadedChapter.asURL();
+    console.log("BookViewer", "navigateTo", "Chapter initialized", this._currentChapterContents);
+    return this._currentChapterContents.asURL();
   });
   promise = promise.then(url => {
     console.log("BookViewer", "navigateTo", "Got URL for chapter", url);
-    this._loadedChapters.set(url, this._currentLoadedChapter);
+    this._chapterContentsByObjectURL.set(url, this._currentChapterContents);
     this._iframe.setAttribute("src", url);
   });
   return promise.then(null, function(err) {
@@ -191,7 +191,7 @@ BookViewer.prototype.navigateTo = function(chapter, endOfChapter = false) {
 BookViewer.prototype.changeChapterBy = function(delta) {
   console.log("BookViewer", "changeChapterBy", delta);
   var promise = new Promise(resolve => resolve(this._book.chapters));
-  var currentChapterEntry = this._currentLoadedChapter.entry;
+  var currentChapterEntry = this._currentChapterContents.entry;
   promise = promise.then(chapters =>
     chapters.indexOf(currentChapterEntry)
   );
@@ -209,9 +209,9 @@ BookViewer.prototype.changeChapterBy = function(delta) {
  */
 BookViewer.prototype._cleanup = function(chapterURL) {
   console.log("BookViewer", "_cleanup", chapterURL);
-  var resources = this._loadedChapters.get(chapterURL);
-  resources.dispose();
-  this._loadedChapters.delete(chapterURL);
+  var chapterContents = this._chapterContentsByObjectURL.get(chapterURL);
+  chapterContents.unload();
+  this._chapterContentsByObjectURL.delete(chapterURL);
 };
 
 /**
@@ -307,17 +307,17 @@ BookViewer.prototype._keyboardNavigation = function(code) {
 };
 
 /**
- * A chapter loaded in memory, including both the html document
- * and the underlying resources.
+ * A chapter, including both the html document
+ * and the companion resources.
  *
- * Once you are done using a LoadedChapter, do not forget to
+ * Once you are done using a ChapterContents, do not forget to
  * call method `dispose`.
  *
  * @param {Book.Resource} entry The entry holding the raw
  * data for the chapter.
  * @param {Book} book The book containing the chapter.
  */
-function LoadedChapter(entry, book) {
+function ChapterContents(entry, book) {
   /**
    * The entry holding the raw data for the chapter.
    *
@@ -347,11 +347,26 @@ function LoadedChapter(entry, book) {
   this._resources = [entry];
 
   /**
-   * `true` once the chapter is initialized.
+   * `true` if the chapter is currently available in memory.
    */
-  this._initialized = false;
+  this._loaded = false;
+
+  /**
+   * A promise resolved once loading is complete.
+   *
+   * @type {Promise}
+   */
+  this._promiseLoaded = null;
+
+  /**
+   * A queue of ongoing operations.
+   * Use `this._enqueue` to enqueue load/unload operations.
+   *
+   * @type {Promise}
+   */
+  this._queue = Promise.resolve();
 }
-LoadedChapter.prototype = {
+ChapterContents.prototype = {
   /**
    * The entry holding the raw data for the chapter.
    *
@@ -362,24 +377,33 @@ LoadedChapter.prototype = {
   },
 
   /**
-   * Initialize the chapter.
+   * Load the chapter.
    *
    * Parse the html document, inject the style as well as
    * the code necessary for reading through, rewrite any
    * image, link, etc.
    *
+   * @param {bool} endOfChapter If `true`, we are entering
+   * the chapter from the end. Otherwise, we are entering
+   * the chapter from the start.
    * @return {Promise}
    */
-  init: function(endOfChapter) {
+  load: function(endOfChapter) {
+    if (this._promiseLoaded) {
+      return this._promiseLoaded;
+    }
+    return this._enqueue(() => {
+      return this._promiseLoaded = this._load(endOfChapter);
+    });
+  },
+  // Implementation of `load`
+  _load: function(endOfChapter) {
     if (typeof endOfChapter != "boolean") {
       throw new TypeError("Expected a boolean");
     }
-    if (this._initialized) {
-      throw new Error("Chapter already initialized");
-    }
-    var promise = this._entry.asDocument(this, true);
+    var promise = this._entry.asDocument(this, false);
     promise = promise.then(xml => {
-      console.log("LoadedChapter", "Opened document", xml);
+      console.log("ChapterContents", "Opened document", xml);
 
       //
       // Adapt XML document for proper display.
@@ -420,32 +444,25 @@ LoadedChapter.prototype = {
 
       // 2.2 The part that puts us in the right position
       var injectScript2;
-      if (endOfChapter) {
-        // Go to the end of the chapter without triggering an animation
-        // that goes through all pages of the chapter.
-        injectScript2 = xml.createElement("script");
-        injectScript2.setAttribute("type", "text/javascript");
-        injectScript2.textContent = "window.addEventListener('load', function() { window.Lector.enterChapter('end'); });";
-      } else {
-        injectScript2 = xml.createElement("script");
-        injectScript2.setAttribute("type", "text/javascript");
-        injectScript2.textContent = "window.addEventListener('load', function() { window.Lector.enterChapter('start'); });";
-      }
+      var position = endOfChapter ? Infinity : 0;
+      injectScript2 = xml.createElement("script");
+      injectScript2.setAttribute("type", "text/javascript");
+      injectScript2.textContent = "window.addEventListener('load', function() { window.Lector.enterChapter(" + position + "); });";
       head.appendChild(injectScript2);
 
       // 3. Rewrite internal links
       // (scripts, stylesheets, etc.)
       var generateLink = (node, attribute) => {
         var href = node.getAttribute(attribute);
-        console.log("LoadedChapter", "Generating link for", node, attribute, href);
+        console.log("ChapterContents", "Generating link for", node, attribute, href);
         if (!href) {
-          console.log("LoadedChapter", "No link for", href);
+          console.log("ChapterContents", "No link for", href);
           // No link at all, e.g. anchors, inline scripts.
           return;
         }
         try {
           new URL(href);
-          console.log("LoadedChapter", "Link for", href, "is absolute, nothing to do");
+          console.log("ChapterContents", "Link for", href, "is absolute, nothing to do");
           // If we reach this point, the link is absolute, we have
           // nothing to do.
           return;
@@ -455,14 +472,14 @@ LoadedChapter.prototype = {
         }
         var resource = this._book.getResource(href);
         if (!resource) {
-          console.log("LoadedChapter", "Could not find resource for", href);
+          console.log("ChapterContents", "Could not find resource for", href);
           return;
         } else {
-          console.log("LoadedChapter", "Found a resource for", href);
+          console.log("ChapterContents", "Found a resource for", href);
         }
         var promise = resource.asObjectURL(this);
         promise = promise.then(url => {
-          console.log("LoadedChapter", "Got a url for", href, url);
+          console.log("ChapterContents", "Got a url for", href, url);
           node.setAttribute(attribute, url);
           return resource;
         });
@@ -492,11 +509,11 @@ LoadedChapter.prototype = {
         generateLink(script, "src");
       });
       [...xml.querySelectorAll("html > body a")].forEach(a => {
-        console.log("LoadedChapter", "Rewriting link", a);
+        console.log("ChapterContents", "Rewriting link", a);
         var href = a.getAttribute("href");
         if (!href || href.startsWith("#") || href.startsWith("javascript") || href.contains("://")) {
           // Not a link internal to the book.
-          console.log("LoadedChapter", "External link, nothing to rewrite", a);
+          console.log("ChapterContents", "External link, nothing to rewrite", a);
           return;
         }
         // At this stage, we assume that this is a link internal to the book.
@@ -504,9 +521,9 @@ LoadedChapter.prototype = {
         a.setAttribute("href", "javascript:window.Lector.goto('" + href + "');");
       });
 
-      console.log("LoadedChapter", "Waiting until all rewrites are complete");
+      console.log("ChapterContents", "Waiting until all rewrites are complete");
       return Promise.all(this._resources).then(() => {
-        console.log("LoadedChapter", "All resources are now available");
+        console.log("ChapterContents", "All resources are now available");
         return Promise.resolve(xml);
       });
     });
@@ -515,15 +532,18 @@ LoadedChapter.prototype = {
     // We introduce artificial calls to `Promise.resolve` to ensure that
     // we do not paralyze the main thread for too long.
     promise = promise.then(xml => {
+      console.log("ChapterContents", "load", "Serializing to string");
       return Promise.resolve(new XMLSerializer().serializeToString(xml));
     });
     promise = promise.then(source => {
+      console.log("ChapterContents", "load", "Encoding string");
       return Promise.resolve(new TextEncoder().encode(source));
     });
     promise = promise.then(encoded => {
+      console.log("ChapterContents", "load", "Converting to object URL");
       var blob = new Blob([encoded], { type: "text/html" });
       this._url = URL.createObjectURL(blob);
-      this._initialized = true;
+      this._loaded = true;
     });
     return promise;
   },
@@ -532,8 +552,9 @@ LoadedChapter.prototype = {
    * Return the object URL for this chapter.
    */
   asURL: function() {
-    if (!this._initialized) {
-      throw new Error("Not initialized");
+    console.log("ChapterContents", "asURL");
+    if (!this._loaded) {
+      throw new Error("Not loaded");
     }
     return this._url;
   },
@@ -541,22 +562,47 @@ LoadedChapter.prototype = {
   /**
    * Cleanup all resources.
    *
-   * The object becomes unusable.
+   * Before the chapter may be reused, `load()` must be called.
+   * @return {Promise}
    */
-  dispose: function() {
-    if (!this._initialized) {
-      throw new Error("Not initialized");
-    }
+  unload: function() {
+    console.log("ChapterContents", "unload", this);
+    this._enqueue(() => {
+      this._loaded = false;
+      return this._unload();
+    });
+  },
+  // Implementation of `unload`
+  _unload: function() {
+    this._promiseLoaded = null;
     var promise = Promise.all(this._resources);
     promise = promise.then(resources => {
       for (var object of resources) {
-        console.log("LoadedChapter", "Revoking", object);
+        console.log("ChapterContents", "Revoking", object);
         object.release(this);
       }
+      this._resources.length = 0;
     });
     promise = promise.then(() => {
       URL.revokeObjectURL(this._url);
       this._url = null;
+    });
+    return promise;
+  },
+
+  _enqueue: function(cb) {
+    var resolve;
+    var promise = this._queue;
+    this._queue = new Promise(_resolve => {
+      resolve = _resolve;
+    });
+    promise = promise.then(cb);
+    promise = promise.then(() => {
+      resolve();
+    }, error => {
+      console.error("ChapterContents", "_enqueue", error);
+      resolve();
+      throw error;
     });
     return promise;
   }

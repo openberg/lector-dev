@@ -58,11 +58,10 @@ window.addEventListener("DOMContentLoaded", function observer() {
  * Finish setting up transitions, start at the expected page
  * in the chapter.
  *
- * @param {string} position, one of "begin" or "end".
+ * @param {number} position, may be 0 or Infinity.
  */
 window.Lector.enterChapter = function(position) {
-  var startPage = position == "end" ? Infinity : 0;
-  scrollToPage(startPage);
+  scrollToPage(position);
   window.requestAnimationFrame(() => {
     window.requestAnimationFrame(() => {
       // Only now cause smooth scrolling between pages.
