@@ -35,5 +35,15 @@ function append(url, string) {
 }
 exports.append = append;
 
+function cleanupBlobURL(string) {
+  var hashPosition = string.indexOf("#");
+  if (hashPosition == -1) {
+    return string;
+  } else {
+    return string.substring(0, hashPosition);
+  }
+}
+exports.cleanupBlobURL = cleanupBlobURL;
+
 return exports;
 });

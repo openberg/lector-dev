@@ -82,8 +82,14 @@ BookViewer.prototype = {};
 
 /**
  * Open a book.
+ *
+ * @param {URL|File} source The URL or File from which to load the book.
+ * @param {string|number=} chapter The chapter at which to start reading. If
+ * unspecified, start reading at the first chapter.
+ * @param {boolean=} endOfChapter If `true`, start reading from the end of the
+ * chapter, i.e. as if we had just navigated from the next chapter.
  */
-BookViewer.prototype.open = function(source, chapter = null) {
+BookViewer.prototype.open = function(source, chapter = 0, endOfChapter = false) {
   console.log("BookViewer", "opening book", source);
   this.notifications.notify("book:opening", { source: source });
   var promise = Promise.resolve();
@@ -96,7 +102,7 @@ BookViewer.prototype.open = function(source, chapter = null) {
   });
   if (chapter != null) {
     promise = promise.then(() =>
-      this.navigateTo(chapter)
+      this.navigateTo(chapter, endOfChapter)
     );
   }
   promise = promise.then(null, e => {
@@ -128,7 +134,7 @@ BookViewer.prototype.changePageBy = function(delta) {
  * @return {Promise} A Promise fulfilled once navigation is complete.
  */
 BookViewer.prototype.navigateTo = function(chapter, endOfChapter = false) {
-  console.log("navigateTo", chapter, endOfChapter);
+  console.log("BookViewer", "navigateTo", chapter, endOfChapter);
   if (typeof chapter != "number" && typeof chapter != "string") {
     throw new TypeError("Expected a number");
   }
@@ -137,13 +143,16 @@ BookViewer.prototype.navigateTo = function(chapter, endOfChapter = false) {
   var promise = this._book.init(endOfChapter);
 
   promise = promise.then(() => {
-    console.log("navigateTo", "Book is initialized");
+    console.log("BookViewer", "navigateTo", "Book is initialized");
     var entry = null;
     var num = -1;
     if (typeof chapter == "number") {
       entry = this._book.chapters[chapter];
+      if (entry == null) {
+        throw new Error("Could not find chapter");
+      }
       num = chapter;
-      console.log("navigateTo", "chapter is a number");
+      console.log("BookViewer", "navigateTo", "chapter is a number");
     } else {
       entry = this._book.getResource(chapter);
       var chapters = this._book.chapters;
@@ -151,9 +160,8 @@ BookViewer.prototype.navigateTo = function(chapter, endOfChapter = false) {
       if (num == -1) {
         throw new Error("Could not find chapter");
       }
-      console.log("navigateTo", "chapter is a key");
+      console.log("BookViewer", "navigateTo", "chapter is a key");
     }
-    console.log("navigateTo", "Found entry", entry);
     if (!entry) {
       throw new Error("Could not find chapter " + chapter);
     }
@@ -162,21 +170,24 @@ BookViewer.prototype.navigateTo = function(chapter, endOfChapter = false) {
       num: num,
     };
     this.notifications.notify("chapter:exit", { chapter: this._chapterInfo });
-    console.log("BookViewer", "navigateTo", "Opening document", entry);
+    console.log("BookViewer", "navigateTo", "Opening document");
     this._currentChapterContents = new ChapterContents(entry, this._book);
-    return this._currentChapterContents.load(endOfChapter);
+    return this._currentChapterContents.load();
   });
   promise = promise.then(() => {
-    console.log("BookViewer", "navigateTo", "Chapter initialized", this._currentChapterContents);
+    console.log("BookViewer", "navigateTo", "Chapter initialized");
     return this._currentChapterContents.asURL();
   });
   promise = promise.then(url => {
     console.log("BookViewer", "navigateTo", "Got URL for chapter", url);
     this._chapterContentsByObjectURL.set(url, this._currentChapterContents);
+    if (endOfChapter) {
+      url += "#lector:startpage=Infinity";
+    }
     this._iframe.setAttribute("src", url);
   });
   return promise.then(null, function(err) {
-    console.error("Error in BookViewer.prototype.navigateTo", err);
+    console.error("BookViewer", "navigateTo", err);
   });
 };
 
@@ -208,6 +219,7 @@ BookViewer.prototype.changeChapterBy = function(delta) {
  * Revoke any object URL that may have been left in memory by the previous load.
  */
 BookViewer.prototype._cleanup = function(chapterURL) {
+  chapterURL = UrlUtils.cleanupBlobURL(chapterURL);
   console.log("BookViewer", "_cleanup", chapterURL);
   var chapterContents = this._chapterContentsByObjectURL.get(chapterURL);
   chapterContents.unload();
@@ -383,24 +395,18 @@ ChapterContents.prototype = {
    * the code necessary for reading through, rewrite any
    * image, link, etc.
    *
-   * @param {bool} endOfChapter If `true`, we are entering
-   * the chapter from the end. Otherwise, we are entering
-   * the chapter from the start.
    * @return {Promise}
    */
-  load: function(endOfChapter) {
+  load: function() {
     if (this._promiseLoaded) {
       return this._promiseLoaded;
     }
     return this._enqueue(() => {
-      return this._promiseLoaded = this._load(endOfChapter);
+      return this._promiseLoaded = this._load();
     });
   },
   // Implementation of `load`
-  _load: function(endOfChapter) {
-    if (typeof endOfChapter != "boolean") {
-      throw new TypeError("Expected a boolean");
-    }
+  _load: function() {
     var promise = this._entry.asDocument(this, false);
     promise = promise.then(xml => {
       console.log("ChapterContents", "Opened document", xml);
@@ -445,6 +451,7 @@ ChapterContents.prototype = {
       injectScript.textContent = "// Nothing to see"; // Workaround serializer bug
       head.appendChild(injectScript);
 
+/*
       // 2.2 The part that puts us in the right position
       var injectScript2;
       var position = endOfChapter ? Infinity : 0;
@@ -453,6 +460,7 @@ ChapterContents.prototype = {
       injectScript2.setAttribute("type", "text/javascript");
       injectScript2.textContent = "window.addEventListener('load', function() { window.Lector.enterChapter(" + position + "); });";
       head.appendChild(injectScript2);
+*/
 
       // 3. Rewrite internal links
       // (scripts, stylesheets, etc.)

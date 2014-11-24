@@ -119,6 +119,7 @@ if (params) {
     } else {
       var bookURL;
       var chapterNum = 0;
+      var endOfChapter = false;
       if (params.has("book")) {
         bookURL = UrlUtils.toURL(params.get("book"));
       }
@@ -126,9 +127,12 @@ if (params) {
       if (params.has("chapter")) {
         chapterNum = Number.parseInt(params.get("chapter"));
       }
+      if (params.has("end")) {
+        endOfChapter = true;
+      }
 
       if (bookURL) {
-        bookViewer.open(bookURL, chapterNum).then(null, e => {
+        bookViewer.open(bookURL, chapterNum, endOfChapter).then(null, e => {
           Menus.bottom.showText("Error while opening book: " + e);
           console.error(e);
         });

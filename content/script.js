@@ -55,23 +55,6 @@ window.addEventListener("DOMContentLoaded", function observer() {
 
 
 /**
- * Finish setting up transitions, start at the expected page
- * in the chapter.
- *
- * @param {number} position, may be 0 or Infinity.
- */
-window.Lector.enterChapter = function(position) {
-  scrollToPage(position);
-  window.requestAnimationFrame(() => {
-    window.requestAnimationFrame(() => {
-      // Only now cause smooth scrolling between pages.
-      document.body.style.transition = "transform .3s";
-    });
-  });
-};
-
-
-/**
  * Configure the font size.
  *
  * @param {number} A factor by which to multiply the default font
@@ -100,6 +83,7 @@ window.Lector.goto = function(href) {
 
 window.addEventListener("load", function() {
   window.parent.postMessage({method: "load", args:[]}, "*");
+  onstart();
 });
 
 window.addEventListener("unload", function() {
@@ -317,5 +301,41 @@ function scrollBy(deltaPages, mayChangeChapter = true) {
   }
   scrollToPage(nextPage);
 }
+
+//
+// Startup
+//
+function onstart() {
+  console.log("Content", "onstart", window.location.hash);
+  //
+  // If the hash contains #lector:startpage=xxx, move
+  // to page xxx. xxx may be a number, including
+  // Infinity for the last page of the chapter.
+  //
+  const STARTPAGE_PREFIX = "#lector:startpage=";
+  if (window.location.hash.startsWith(STARTPAGE_PREFIX)) {
+    console.log("Content", "onstart", "start page was specified");
+    try {
+      var position = Number(window.location.hash.substring(STARTPAGE_PREFIX.length));
+      console.log("Content", "onstart", "start page", position);
+      scrollToPage(position);
+    } catch (ex) {
+      console.error("Content", "onstart", "start page failure", ex);
+    }
+  }
+
+  //
+  // Now that we have picked the start page, any further
+  // transition between pages should be animated.
+  //
+  // We wait two animation frames before doing this, to
+  // ensure that the initial scrolling is complete.
+  //
+  window.requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => {
+      document.body.style.transition = "transform .3s";
+    });
+  });
+};
 
 })();
