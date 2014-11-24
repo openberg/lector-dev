@@ -59,6 +59,14 @@ function BookViewer(element) {
   this._chapterInfo = null;
 
   /**
+   * A cache for ChapterContents.
+   *
+   * Keys: Book.Resource
+   * Values: ChapterContents
+   */
+  this._chapterContentsByEntry = new Map();
+
+  /**
    * The chapters that are currently loaded in memory.
    *
    * Keys: Object URL
@@ -171,7 +179,7 @@ BookViewer.prototype.navigateTo = function(chapter, endOfChapter = false) {
     };
     this.notifications.notify("chapter:exit", { chapter: this._chapterInfo });
     console.log("BookViewer", "navigateTo", "Opening document");
-    this._currentChapterContents = new ChapterContents(entry, this._book);
+    this._currentChapterContents = this._getChapterContentsForEntry(entry);
     return this._currentChapterContents.load();
   });
   promise = promise.then(() => {
@@ -190,6 +198,30 @@ BookViewer.prototype.navigateTo = function(chapter, endOfChapter = false) {
     console.error("BookViewer", "navigateTo", err);
   });
 };
+
+/**
+ * Get the chapter contents for an entry.
+ *
+ * If a ChapterContents object has already been created for this entry, reuse it.
+ * Otherwise, construct a new one.
+ *
+ * @param {Book.Resource} entry The entry for which we try to locate a ChapterContents.
+ * @return {ChapterContents}
+ */
+BookViewer.prototype._getChapterContentsForEntry = function(entry) {
+  if (!(entry instanceof Book.Resource)) {
+    throw new TypeError("Expected an instance of Book.Resource");
+  }
+  var contents = this._chapterContentsByEntry.get(entry);
+  if (contents) {
+    console.log("BookViewer", "_getChapterContentsForEntry", "Reusing existing ChapterContents");
+  } else {
+    console.log("BookViewer", "_getChapterContentsForEntry", "Constructing new ChapterContents");
+    contents = new ChapterContents(entry, this._book);
+    this._chapterContentsByEntry.set(entry, contents);
+  }
+  return contents;
+}
 
 /**
  * Move forwards/backwards by a number of chapters.
