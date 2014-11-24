@@ -67,7 +67,7 @@ if ("mozSetMessageHandler" in navigator) {
 
 
 var Menus = {
-  top: new Menu($("menu_top")),
+  top: new Menu($("menu_top"), $("menu_top_contents")),
   bottom: new Menu($("menu_bottom")),
   show: function() {
     this.top.show();

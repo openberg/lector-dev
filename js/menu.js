@@ -1,8 +1,9 @@
 window.define(function() {
 "use strict";
 
-function Menu(elt) {
+function Menu(elt, textarea = null) {
   this.element = elt;
+  this.textarea = textarea || elt;
   this._hiding = null;
   this._showing = null;
   this._textIsInvisible = false;
@@ -23,7 +24,7 @@ Menu.prototype = {
     if (elt.classList.contains("hidden")) {
       // The menu is invisible, just change the text
       // and display the menu.
-      elt.textContent = text;
+      this.textarea.textContent = text;
       this.show();
       return;
     }
@@ -58,6 +59,7 @@ Menu.prototype = {
     return promise;
   },
   show: function() {
+    console.log("Menu", "show", this.element.id);
     if (this._showing) {
       return this._showing;
     }

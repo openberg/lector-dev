@@ -46,14 +46,23 @@ html, body {
 
 .menu.hidden_text {
   color: green;
-};
+}
 
 .top {
-    top: 0;
+  position: absolute;
+  top: 0;
 }
 
 .bottom {
-    bottom: 0;
+  position: absolute;
+  bottom: 0;
+}
+
+.menu_height {
+  padding: .5em;
+  width: 1em;
+  height: 1em;
+  cursor: pointer;
 }
 
 .fade_inout {
@@ -98,6 +107,7 @@ li.library_entry {
   vertical-align: middle;
   border-bottom: inset black 1px;
   transition: background-color 1s;
+  cursor: pointer;
 }
 
 .book_title {
