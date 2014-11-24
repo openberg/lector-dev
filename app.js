@@ -98,6 +98,9 @@ filePicker.notifications.addObserver("file:open", event => {
   library.open(event.file).then(book => bookViewer.view(book));
 });
 
+//
+// Populate the library menu, then display it.
+//
 var library = new Library([BookEPub]);
 (function init_library() {
   var libraryElement = $("library_entries");
@@ -108,7 +111,7 @@ var library = new Library([BookEPub]);
       console.log("App", "Library", "Opening", entry.title);
       entry.open().then(book => bookViewer.view(book));;
     });
-    libraryElement.appendChild(li);
+    libraryElement.insertBefore(li, $("pick"));
 
     var title = document.createElement("span");
     title.classList.add("book_title");
