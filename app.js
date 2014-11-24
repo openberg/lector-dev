@@ -1,11 +1,13 @@
 window.require(['js/polyfills',
                 'js/book',
                 'js/bookviewer',
+                'js/book-epub.js',
                 'js/filepicker',
+                'js/library',
                 'js/menu',
                 'js/sizewatcher',
                 'js/urlutils'],
-  function(_, Book, BookViewer, FilePicker, Menu, SizeWatcher, UrlUtils) {
+  function(_, Book, BookViewer, BookEPub, FilePicker, Library, Menu, SizeWatcher, UrlUtils) {
 "use strict";
 
 var $ = id => document.getElementById(id);
@@ -46,6 +48,7 @@ bookViewer.notifications.addObserver("chapter:enter", function(event) {
 bookViewer.notifications.addObserver("book:open", function(event) {
   console.log("Opened book", event);
   $("welcome").classList.add("scrolledleft");
+  $("contents").classList.remove("invisible");
   Menus.top.showText(event.book.title);
 });
 bookViewer.notifications.addObserver("book:opening", function(event) {
@@ -57,15 +60,8 @@ bookViewer.notifications.addObserver("book:opening:failed", function(event) {
 });
 if ("mozSetMessageHandler" in navigator) {
   navigator.mozSetMessageHandler('activity', function(request) {
-    console.log("Activity request", request);
-    console.log("Activity data", JSON.stringify(request.source.data));
-    console.log("App", "Opening file from activity", request.source.name);
-    var file = request.source.data.blob;
-    var promise = bookViewer.open(file, 0);
-    promise = promise.then(null, e => {
-      Menus.bottom.showText("Error while opening book: " + e);
-      console.error(e);
-    });
+    console.log("App", "Opening file from the activity message handler", request.source.data);
+    library.open(request.source.data.blob).then(book => bookViewer.view(book));
   });
 }
 
@@ -99,19 +95,40 @@ Menus.autoHide();
 var filePicker = new FilePicker($("pick"), "application/*");
 filePicker.notifications.addObserver("file:open", event => {
   console.log("App", "Opening file from the file picker", event.file);
-  var file = event.file;
-  var promise = bookViewer.open(file, 0);
-  promise = promise.then(null, e => {
-    Menus.bottom.showText("Error while opening book: " + e);
-    console.error(e);
+  library.open(event.file).then(book => bookViewer.view(book));
+});
+
+var library = new Library([BookEPub]);
+(function init_library() {
+  var libraryElement = $("library_entries");
+  library.entries.forEach(entry => {
+    var li = document.createElement("li");
+    li.classList.add("library_entry");
+    li.addEventListener("click", function() {
+      console.log("App", "Library", "Opening", entry.title);
+      entry.open().then(book => bookViewer.view(book));;
+    });
+    libraryElement.appendChild(li);
+
+    var title = document.createElement("span");
+    title.classList.add("book_title");
+    title.textContent = entry.title;
+    li.appendChild(title);
+
+    var author = document.createElement("span");
+    author.textContent = ", by " + entry.author;
+    li.appendChild(author);
   });
+  libraryElement.classList.remove("hidden");
+})();
+library.notifications.addObserver("library:open:failure", event => {
+  Menus.bottom.showText("Error while opening book: " + event.error);
 });
 
 //
 // Load a book passed as URL.
 //
 var params = new URL(window.location).searchParams;
-console.log("Params", params, new URL(window.location));
 if (params) {
   try {
     if (params.get("action") == "view") {
@@ -132,10 +149,7 @@ if (params) {
       }
 
       if (bookURL) {
-        bookViewer.open(bookURL, chapterNum, endOfChapter).then(null, e => {
-          Menus.bottom.showText("Error while opening book: " + e);
-          console.error(e);
-        });
+        library.open(bookURL).then(book => bookViewer.view(book, chapterNum, endOfChapter));
       }
     }
   } catch (ex) {

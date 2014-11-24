@@ -1,8 +1,7 @@
 define(['js/book',
-        'js/book-epub',
         'js/notifications',
         'js/urlutils'],
-  function(Book, BookEpub,
+  function(Book,
           Notifications, UrlUtils) {
 "use strict";
 
@@ -91,28 +90,24 @@ BookViewer.prototype = {};
 /**
  * Open a book.
  *
- * @param {URL|File} source The URL or File from which to load the book.
+ * @param {Book} book The book.
  * @param {string|number=} chapter The chapter at which to start reading. If
  * unspecified, start reading at the first chapter.
  * @param {boolean=} endOfChapter If `true`, start reading from the end of the
  * chapter, i.e. as if we had just navigated from the next chapter.
  */
-BookViewer.prototype.open = function(source, chapter = 0, endOfChapter = false) {
-  console.log("BookViewer", "opening book", source);
-  this.notifications.notify("book:opening", { source: source });
-  var promise = Promise.resolve();
+BookViewer.prototype.view = function(book, chapter = 0, endOfChapter = false) {
+  console.log("BookViewer", "view", book);
+  this._book = book;
+  var promise = this._book.init();
   promise = promise.then(() => {
-    this._book = Book.open(source, [BookEpub]);
-    return this._book.init();
-  });
-  promise = promise.then(() => {
+    console.log("BookViewer", "view", "book initialized");
     this.notifications.notify("book:open", { book: this._book });
   });
-  if (chapter != null) {
-    promise = promise.then(() =>
-      this.navigateTo(chapter, endOfChapter)
-    );
-  }
+  promise = promise.then(() => {
+    console.log("BookViewer", "view", "Need to go to chapter", chapter, endOfChapter);
+    this.navigateTo(chapter, endOfChapter)
+  });
   promise = promise.then(null, e => {
     this.notifications.notify("book:opening:failed", { error: e });
     return e;

@@ -30,7 +30,6 @@ function append(url, string) {
     url.href += "/../";
   }
   url.href += string;
-  console.log(url);
   return url;
 }
 exports.append = append;

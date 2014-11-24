@@ -32,26 +32,42 @@ var Archive = function(file) {
   } else if (typeof file == "string") {
     this._initFromURL(UrlUtils.toURL(file));
   } else {
+    console.error("Archive", "constructor", "Expected a File or a URL", file);
     throw new TypeError("Expected a File or a URL");
   }
 };
 
 Archive.prototype = {
   _initFromFile: function(file) {
-    this._promiseReader = new Promise(resolve =>
-      zip.createReader(new zip.BlobReader(file), resolve));
+    this._promiseReader = new Promise((resolve, reject) => {
+      console.log("Archive", "_initFromFile");
+      zip.createReader(new zip.BlobReader(file), resolve)
+    });
     this._name = file.name;
   },
   _initFromURL: function(url) {
-    console.log("Archive: Attempting to open url", url);
-    this._promiseReader = new Promise(resolve => {
+    if (!url instanceof window.URL) {
+      throw new TypeError("Expected a URL");
+    }
+    console.log("Archive", "_initFromURL", url, typeof url);
+    this._promiseReader = new Promise((resolve, reject) => {
       var downloader = new XMLHttpRequest();
+      downloader.addEventListener("error", e => {
+        reject(new Error(e));
+      });
       downloader.addEventListener("loadend", (e) => {
-        zip.createReader(new zip.BlobReader(downloader.response), resolve);
+        console.log("Archive", "_initFromURL", "loadend", downloader, e);
+        if (!downloader.response) {
+          return;
+        }
+        zip.createReader(new zip.BlobReader(downloader.response), resolve, reject);
       });
       downloader.open("GET", url.href);
       downloader.responseType = "blob";
       downloader.send();
+    });
+    this._promiseReader.catch(error => {
+      console.error("Archive", "_initFromURL", error);
     });
     this._name = url.href;
   },

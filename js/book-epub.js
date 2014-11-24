@@ -12,6 +12,7 @@ var console = window.console;
  */
 var BookEpub = function(file) {
   Book.call(this);
+  console.log("BookEpub", "constructing");
 
   // Function to call once initialization is complete.
   var resolveInitialized = null;
@@ -27,9 +28,12 @@ var BookEpub = function(file) {
   this._resolveTo = null;
 
   // Read package document and toc document.
-  var promise = this._archive.init();
+  var promise = Promise.resolve();
+  promise = promise.then(() => this._archive.init());
 
   promise = promise.then(() => {
+    console.log("BookEpub", "constructing", "archive initialized");
+
     // File `container.xml` tells us where we can find the package document.
     // (generally OEBPS/content.opf).
     var containerEntry = new Book.Resource("container.xml", this._archive.entries.get("META-INF/container.xml"));
@@ -38,6 +42,8 @@ var BookEpub = function(file) {
   });
 
   promise = promise.then(container => {
+    console.log("BookEpub", "constructing", "reading container.xml");
+
     // Extract the information and parse the package document.
     var eltRoot = container.querySelector("container > rootfiles > rootfile");
     var path = eltRoot.getAttribute("full-path");
@@ -46,10 +52,12 @@ var BookEpub = function(file) {
   });
 
   promise = promise.then((pkg) => {
+    console.log("BookEpub", "constructing", "reading package file");
+
     this._package = pkg;
 
     // Extract the table of contents
-    console.log("I have the following files", [...this._archive.entries.keys()]);
+    console.log("BookEpub", "I have the following files", [...this._archive.entries.keys()]);
     for (var itemref of pkg.querySelectorAll("package > spine > itemref")) {
       var item = this._getElementById(pkg, itemref.getAttribute("idref"));
       console.log("Item", pkg, itemref, itemref.getAttribute("idref"), item);
