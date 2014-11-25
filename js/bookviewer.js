@@ -461,26 +461,6 @@ ChapterContents.prototype = {
       injectLink.setAttribute("href", UrlUtils.toURL("content/books.css").href);
       head.appendChild(injectLink);
 
-      // 1.2 The part specific to some browsers
-      var injectLink2 = xml.createElement("link");
-      injectLink2.setAttribute("id", "lector:injectLink2");
-      injectLink2.setAttribute("rel", "stylesheet");
-      injectLink2.setAttribute("type", "text/css");
-      head.appendChild(injectLink2);
-
-      if (navigator.userAgent.contains("Mobile") && !navigator.userAgent.contains("Android") && (
-        navigator.userAgent.contains("Firefox/28.0")|| navigator.userAgent.contains("Firefox/34.0")
-      )) {
-        //
-        // Firefox OS 1.3 or 2 have a surprising interpretation of padding + columns.
-        // Falling back to a style sheet without padding.
-        //
-        injectLink2.setAttribute("href", UrlUtils.toURL("content/books-b2g13.css").href);
-      } else {
-        // Other browsers
-        injectLink2.setAttribute("href", UrlUtils.toURL("content/books-other.css").href);
-      }
-
       // 2. Inject global book scripts
       // 2.1 The part that ensures that we can navigate
       var injectScript = xml.createElement("script");
@@ -489,17 +469,6 @@ ChapterContents.prototype = {
       injectScript.setAttribute("src", UrlUtils.toURL("content/script.js").href);
       injectScript.textContent = "// Nothing to see"; // Workaround serializer bug
       head.appendChild(injectScript);
-
-/*
-      // 2.2 The part that puts us in the right position
-      var injectScript2;
-      var position = endOfChapter ? Infinity : 0;
-      injectScript2 = xml.createElement("script");
-      injectScript2.setAttribute("id", "lector:injectScript2");
-      injectScript2.setAttribute("type", "text/javascript");
-      injectScript2.textContent = "window.addEventListener('load', function() { window.Lector.enterChapter(" + position + "); });";
-      head.appendChild(injectScript2);
-*/
 
       // 3. Rewrite internal links
       // (scripts, stylesheets, etc.)
