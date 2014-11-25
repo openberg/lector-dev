@@ -122,6 +122,7 @@ BookViewer.prototype.navigateTo = function(chapter, endOfChapter = false) {
 
   // Before proceeding, make sure that the book is fully initialized.
   var promise = this._view.book.init(endOfChapter);
+  var anchor = null;
 
   promise = promise.then(() => {
     console.log("BookViewer", "navigateTo", "Book is initialized");
@@ -132,8 +133,8 @@ BookViewer.prototype.navigateTo = function(chapter, endOfChapter = false) {
       num = chapter;
     } else {
       console.log("BookViewer", "navigateTo", "chapter is a url, looking for number");
+      [chapter, anchor] = chapter.split("#");
       num = this._view.book.chapters.findIndex(x => {
-        console.log("Comparing", x._name, chapter);
         return x._name == chapter;
       });
     }
@@ -159,6 +160,8 @@ BookViewer.prototype.navigateTo = function(chapter, endOfChapter = false) {
     this._view.chapterContentsByObjectURL.set(url, this._view.currentChapterContents);
     if (endOfChapter) {
       url += "#lector:startpage=Infinity";
+    } else if (anchor) {
+      url += "#" + anchor;
     }
     this._iframe.setAttribute("src", url);
   });
