@@ -59,10 +59,10 @@ function setupColumns() {
     head.appendChild(styleImgElement);
   }
 
-  styleImgElement.textContent = `img {
-    max-width: calc(${ bodyWidth }px - 4em);
-    max-height: calc(${ bodyHeight }px - 4em);
-  }`;
+  styleImgElement.textContent = "img {\n" +
+    "max-width: calc(" + bodyWidth  + "px - 4em);\n" +
+    "max-height: calc(" + bodyHeight  + "px - 4em);\n" +
+  "}";
 }
 
 var BUFFERING_DURATION_MS = 15;
