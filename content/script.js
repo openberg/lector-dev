@@ -304,18 +304,27 @@ function scrollToPage(where) {
     // Scroll to the last page
     where = lastPage;
   } else if (typeof where == "string") {
+    // In HTML5, anchors map to <a id="...">,
+    // so we may find them with `document.getElementById`.
     var element = document.getElementById(where);
+    // In older HTML, anchors map to <a name="...">`,
+    // so we need to walk all the anchors of the document
+    // until we find the right one.
     if (!element) {
-      // FIXME: Handle <a name> anchors.
+      for (var anchor of document.anchors) {
+        if (anchor.name == where) {
+          element = anchor;
+          break;
+        }
+      }
+    }
+    console.log("Contents", "scrollToPage", "element", element);
+    if (!element) {
+      // Could not find an anchor
       return;
     }
-    // Scroll to the current page
-    console.log("Contents", "scrollToPage", "element", element);
-    where = Math.round(element.offsetLeft / width);
-/*
-    var deltaPx = Number(document.body.style.transform(/translateX\((\d*)px\)/));
-    Math.round(deltaPx)
-*/
+    // Pick the coordinates to scroll the element into view.
+    where = Math.floor(element.offsetLeft / width);
   }
   console.log("Content", "scrollToPage", "destination", where);
   currentPage = where;
