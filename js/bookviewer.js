@@ -468,8 +468,13 @@ ChapterContents.prototype = {
       injectLink2.setAttribute("type", "text/css");
       head.appendChild(injectLink2);
 
-      if (navigator.userAgent.contains("Firefox/28.0")) {
-        // Firefox 28 / Firefox OS 1.3
+      if (navigator.userAgent.contains("Mobile") && !navigator.userAgent.contains("Android") && (
+        navigator.userAgent.contains("Firefox/28.0")|| navigator.userAgent.contains("Firefox/34.0")
+      ) {
+        //
+        // Firefox OS 1.3 or 2 have a surprising interpretation of padding + columns.
+        // Falling back to a style sheet without padding.
+        //
         injectLink2.setAttribute("href", UrlUtils.toURL("content/books-b2g13.css").href);
       } else {
         // Other browsers
