@@ -296,13 +296,28 @@ function scrollToPosition(position) {
 
 function scrollToPage(where) {
   Touch.init();
-  console.log("scrollToPage", where);
+  console.log("Contents", "scrollToPage", where);
   var width = gInnerWidth;
   var scrollMaxX = document.body.scrollWidth;
   var lastPage = Math.floor(scrollMaxX / width) - 1;
   if (where == Infinity) {
+    // Scroll to the last page
     where = lastPage;
+  } else if (typeof where == "string") {
+    var element = document.getElementById(where);
+    if (!element) {
+      // FIXME: Handle <a name> anchors.
+      return;
+    }
+    // Scroll to the current page
+    console.log("Contents", "scrollToPage", "element", element);
+    where = Math.round(element.offsetLeft / width);
+/*
+    var deltaPx = Number(document.body.style.transform(/translateX\((\d*)px\)/));
+    Math.round(deltaPx)
+*/
   }
+  console.log("Content", "scrollToPage", "destination", where);
   currentPage = where;
   window.parent.postMessage({method: "pagechange", args:[{page: where, lastPage: lastPage}]}, "*");
   scrollToPosition(currentPage * width);
@@ -358,6 +373,10 @@ function onstart() {
     } catch (ex) {
       console.error("Content", "onstart", "start page failure", ex);
     }
+  } else if (window.location.hash) {
+    var hash = window.location.hash.substring(1);
+    window.location.hash = "";
+    scrollToPage(hash);
   }
 
   //
