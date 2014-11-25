@@ -34,10 +34,35 @@ var gInnerHeight = window.innerHeight;
 // Adapting column size
 //
 
+/**
+ * A <style> node setting the maximal size of images.
+ */
+var styleImgElement = null;
 function setupColumns() {
-  console.log("Setting up columns", document.body, window);
+  console.log("Content", "Setting up columns", document.body, window);
   gInnerWidth = window.innerWidth;
   gInnerHeight = window.innerHeight;
+
+  //
+  // On small screens, many images will not fit.
+  // Let's make sure that we do not have any image that attempts to
+  // take more than the width/height of the screen.
+  //
+  var bodyWidth = document.body.clientWidth;
+  var bodyHeight = document.body.clientHeight;
+
+  console.log("Content", "Setting up image maximal size", bodyWidth, bodyHeight);
+  if (!styleImgElement) {
+    styleImgElement = document.createElement("style");
+    styleImgElement.setAttribute("id", "lector:style:img");
+    var head = document.querySelector("html > head");
+    head.appendChild(styleImgElement);
+  }
+
+  styleImgElement.textContent = `img {
+    max-width: calc(${ bodyWidth }px - 4em);
+    max-height: calc(${ bodyHeight }px - 4em);
+  }`;
 }
 
 var BUFFERING_DURATION_MS = 15;
