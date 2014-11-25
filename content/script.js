@@ -236,10 +236,15 @@ var Touch = {
   },
   __ontouchend: null,
 
+  _initialized: false,
   /**
    * Initialize touch screen handling.
    */
   init: function() {
+    if (this._initialized) {
+      return;
+    }
+    this._initialized = true;
     // Make sure that all event handlers are bound to `this`.
     for (var k of ["_ontouchstart", "_ontouchmove", "_ontouchend"]) {
       this["_" + k] = this[k].bind(this);
@@ -250,6 +255,10 @@ var Touch = {
   },
 
   uninit: function() {
+    if (!this._initialized) {
+      return;
+    }
+    this._initialized = false;
     window.removeEventListener("touchstart", this.__ontouchstart);
     window.removeEventListener("touchmove", this.__ontouchmove);
     window.removeEventListener("touchend", this.__ontouchend);
@@ -286,6 +295,7 @@ function scrollToPosition(position) {
 }
 
 function scrollToPage(where) {
+  Touch.init();
   console.log("scrollToPage", where);
   var width = gInnerWidth;
   var scrollMaxX = document.body.scrollWidth;
@@ -307,6 +317,7 @@ window.Lector.scrollToPage = scrollToPage;
  * May be negative to scroll backwards. Ignored if 0.
  */
 function scrollBy(deltaPages, mayChangeChapter = true) {
+  console.log("Content", "scrollBy", deltaPages, mayChangeChapter)
   var scrollMaxX = document.body.scrollWidth;
   var nextPage = currentPage + deltaPages;
   var width = gInnerWidth;

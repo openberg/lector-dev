@@ -191,6 +191,7 @@ BookViewer.prototype.navigateTo = function(chapter, endOfChapter = false) {
   });
   return promise.then(null, function(err) {
     console.error("BookViewer", "navigateTo", err);
+    throw err;
   });
 };
 
@@ -235,9 +236,15 @@ BookViewer.prototype.changeChapterBy = function(delta) {
   );
   promise = promise.then(index => {
     if (index == -1) {
-      throw new Error("Could not find chapter");
+      throw new Error("Could not find current chapter");
     }
     return this.navigateTo(index + delta, delta == -1);
+  });
+  promise = promise.then(null, error => {
+    console.log("BookViewer", "changeChapterBy",
+      "could not change chapter, reinitializing content", error);
+    this.changePageBy(0);
+    throw error;
   });
   return promise;
 };
