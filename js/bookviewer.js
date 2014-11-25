@@ -48,43 +48,18 @@ function BookViewer(element) {
   element.appendChild(this._iframe);
 
   /**
-   * The book currently displayed.
-   */
-  this._book = null;
-
-  /**
-   * Public information on the chapter currently displayed.
-   */
-  this._chapterInfo = null;
-
-  /**
-   * A cache for ChapterContents.
+   * All data about the book currently displayed.
    *
-   * Keys: Book.Resource
-   * Values: ChapterContents
+   * @type {BookView}
    */
-  this._chapterContentsByEntry = new Map();
-
-  /**
-   * The chapters that are currently loaded in memory.
-   *
-   * Keys: Object URL
-   * Value: ChapterContents
-   */
-  this._chapterContentsByObjectURL = new Map();
-
-  /**
-   * The chapter currently loaded.
-   *
-   * @type {ChapterContents}
-   */
-  this._currentChapterContents = null;
+  this._view = null;
 
   // Handle messages sent from the book itself.
   window.addEventListener("message", e => this._handleMessage(e));
 
   window.addEventListener("keypress", e => this._handleKeyPress(e));
 }
+
 BookViewer.prototype = {};
 
 /**
@@ -98,11 +73,14 @@ BookViewer.prototype = {};
  */
 BookViewer.prototype.view = function(book, chapter = 0, endOfChapter = false) {
   console.log("BookViewer", "view", book);
-  this._book = book;
-  var promise = this._book.init();
+  if (this._view) {
+    this._view.dispose();
+  }
+  this._view = new BookView(book);
+  var promise = this._view.book.init();
   promise = promise.then(() => {
     console.log("BookViewer", "view", "book initialized");
-    this.notifications.notify("book:open", { book: this._book });
+    this.notifications.notify("book:open", { book: this._view.book });
   });
   promise = promise.then(() => {
     console.log("BookViewer", "view", "Need to go to chapter", chapter, endOfChapter);
@@ -143,22 +121,22 @@ BookViewer.prototype.navigateTo = function(chapter, endOfChapter = false) {
   }
 
   // Before proceeding, make sure that the book is fully initialized.
-  var promise = this._book.init(endOfChapter);
+  var promise = this._view.book.init(endOfChapter);
 
   promise = promise.then(() => {
     console.log("BookViewer", "navigateTo", "Book is initialized");
     var entry = null;
     var num = -1;
     if (typeof chapter == "number") {
-      entry = this._book.chapters[chapter];
+      entry = this._view.book.chapters[chapter];
       if (entry == null) {
         throw new Error("Could not find chapter");
       }
       num = chapter;
       console.log("BookViewer", "navigateTo", "chapter is a number");
     } else {
-      entry = this._book.getResource(chapter);
-      var chapters = this._book.chapters;
+      entry = this._view.book.getResource(chapter);
+      var chapters = this._view.book.chapters;
       num = chapters.indexOf(entry);
       if (num == -1) {
         throw new Error("Could not find chapter");
@@ -168,22 +146,22 @@ BookViewer.prototype.navigateTo = function(chapter, endOfChapter = false) {
     if (!entry) {
       throw new Error("Could not find chapter " + chapter);
     }
-    this._chapterInfo = {
+    this._view.chapterInfo = {
       title: null,
       num: num,
     };
-    this.notifications.notify("chapter:exit", { chapter: this._chapterInfo });
+    this.notifications.notify("chapter:exit", { chapter: this._view.chapterInfo });
     console.log("BookViewer", "navigateTo", "Opening document");
-    this._currentChapterContents = this._getChapterContentsForEntry(entry);
-    return this._currentChapterContents.load();
+    this._view.currentChapterContents = this._getChapterContentsForEntry(entry);
+    return this._view.currentChapterContents.load();
   });
   promise = promise.then(() => {
     console.log("BookViewer", "navigateTo", "Chapter initialized");
-    return this._currentChapterContents.asURL();
+    return this._view.currentChapterContents.asURL();
   });
   promise = promise.then(url => {
     console.log("BookViewer", "navigateTo", "Got URL for chapter", url);
-    this._chapterContentsByObjectURL.set(url, this._currentChapterContents);
+    this._view.chapterContentsByObjectURL.set(url, this._view.currentChapterContents);
     if (endOfChapter) {
       url += "#lector:startpage=Infinity";
     }
@@ -208,13 +186,13 @@ BookViewer.prototype._getChapterContentsForEntry = function(entry) {
   if (!(entry instanceof Book.Resource)) {
     throw new TypeError("Expected an instance of Book.Resource");
   }
-  var contents = this._chapterContentsByEntry.get(entry);
+  var contents = this._view.chapterContentsByEntry.get(entry);
   if (contents) {
     console.log("BookViewer", "_getChapterContentsForEntry", "Reusing existing ChapterContents");
   } else {
     console.log("BookViewer", "_getChapterContentsForEntry", "Constructing new ChapterContents");
-    contents = new ChapterContents(entry, this._book);
-    this._chapterContentsByEntry.set(entry, contents);
+    contents = new ChapterContents(entry, this._view.book);
+    this._view.chapterContentsByEntry.set(entry, contents);
   }
   return contents;
 }
@@ -229,8 +207,8 @@ BookViewer.prototype._getChapterContentsForEntry = function(entry) {
  */
 BookViewer.prototype.changeChapterBy = function(delta) {
   console.log("BookViewer", "changeChapterBy", delta);
-  var promise = new Promise(resolve => resolve(this._book.chapters));
-  var currentChapterEntry = this._currentChapterContents.entry;
+  var promise = new Promise(resolve => resolve(this._view.book.chapters));
+  var currentChapterEntry = this._view.currentChapterContents.entry;
   promise = promise.then(chapters =>
     chapters.indexOf(currentChapterEntry)
   );
@@ -255,9 +233,9 @@ BookViewer.prototype.changeChapterBy = function(delta) {
 BookViewer.prototype._cleanup = function(chapterURL) {
   chapterURL = UrlUtils.cleanupBlobURL(chapterURL);
   console.log("BookViewer", "_cleanup", chapterURL);
-  var chapterContents = this._chapterContentsByObjectURL.get(chapterURL);
+  var chapterContents = this._view.chapterContentsByObjectURL.get(chapterURL);
   chapterContents.unload();
-  this._chapterContentsByObjectURL.delete(chapterURL);
+  this._view.chapterContentsByObjectURL.delete(chapterURL);
 };
 
 /**
@@ -285,7 +263,7 @@ BookViewer.prototype._handleMessage = function(e) {
     this.notifications.notify("page:changing", data.args[0]);
     break;
   case "load":
-    this.notifications.notify("chapter:enter", { chapter: this._chapterInfo });
+    this.notifications.notify("chapter:enter", { chapter: this._view.chapterInfo });
     break;
   default:
     console.error("Unknwon message", data.method);
@@ -316,13 +294,13 @@ BookViewer.prototype._handleKeyPress = function(e) {
 
 Object.defineProperty(BookViewer.prototype, "book", {
   get: function() {
-    return this._book;
+    return this._view.book;
   }
 });
 
 Object.defineProperty(BookViewer.prototype, "chapter", {
   get: function() {
-    return this._chapterInfo;
+    return this._view.chapterInfo;
   }
 });
 
@@ -628,6 +606,57 @@ ChapterContents.prototype = {
   }
 };
 
+/**
+ * Data about a book currently being displayed.
+ *
+ * @param {Book} book The book.
+ */
+function BookView(book) {
+  /**
+   * The book currently displayed.
+   *
+   * @type {Book}
+   */
+  this.book = book;
+
+  /**
+   * Public information on the chapter currently displayed.
+   */
+  this.chapterInfo = null;
+
+  /**
+   * A cache for ChapterContents.
+   *
+   * Keys: Book.Resource
+   * Values: ChapterContents
+   */
+  this.chapterContentsByEntry = new Map();
+
+  /**
+   * The chapters that are currently loaded in memory.
+   *
+   * Keys: Object URL
+   * Value: ChapterContents
+   */
+  this.chapterContentsByObjectURL = new Map();
+
+  /**
+   * The chapter currently loaded.
+   *
+   * @type {ChapterContents}
+   */
+  this.currentChapterContents = null;
+}
+BookView.prototype = {
+  /**
+   * Unload the book from memory.
+   */
+  dispose: function() {
+    for (var chapter of this.chapterContentsByObjectURL.values()) {
+      chapter.unload();
+    }
+  }
+};
 return BookViewer;
 
 });
