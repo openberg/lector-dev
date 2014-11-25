@@ -299,7 +299,7 @@ function scrollToPage(where) {
   console.log("Contents", "scrollToPage", where);
   var width = gInnerWidth;
   var scrollMaxX = document.body.scrollWidth;
-  var lastPage = Math.floor(scrollMaxX / width) - 1;
+  var lastPage = Math.ceil(scrollMaxX / width) - 1;
   if (where == Infinity) {
     // Scroll to the last page
     where = lastPage;
