@@ -128,23 +128,18 @@ BookViewer.prototype.navigateTo = function(chapter, endOfChapter = false) {
     var entry = null;
     var num = -1;
     if (typeof chapter == "number") {
-      entry = this._view.book.chapters[chapter];
-      if (entry == null) {
-        throw new Error("Could not find chapter");
-      }
-      num = chapter;
       console.log("BookViewer", "navigateTo", "chapter is a number");
+      num = chapter;
     } else {
-      entry = this._view.book.getResource(chapter);
-      var chapters = this._view.book.chapters;
-      num = chapters.indexOf(entry);
-      if (num == -1) {
-        throw new Error("Could not find chapter");
-      }
-      console.log("BookViewer", "navigateTo", "chapter is a key");
+      console.log("BookViewer", "navigateTo", "chapter is a url, looking for number");
+      num = this._view.book.chapters.findIndex(x => {
+        console.log("Comparing", x._name, chapter);
+        return x._name == chapter;
+      });
     }
-    if (!entry) {
-      throw new Error("Could not find chapter " + chapter);
+    entry = this._view.book.chapters[num];
+    if (entry == null) {
+      throw new Error("Could not find chapter");
     }
     this._view.chapterInfo = {
       title: null,
