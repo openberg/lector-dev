@@ -42,27 +42,6 @@ function setupColumns() {
   console.log("Content", "Setting up columns", document.body, window);
   gInnerWidth = window.innerWidth;
   gInnerHeight = window.innerHeight;
-
-  //
-  // On small screens, many images will not fit.
-  // Let's make sure that we do not have any image that attempts to
-  // take more than the width/height of the screen.
-  //
-  var bodyWidth = document.body.clientWidth;
-  var bodyHeight = document.body.clientHeight;
-
-  console.log("Content", "Setting up image maximal size", bodyWidth, bodyHeight);
-  if (!styleImgElement) {
-    styleImgElement = document.createElement("style");
-    styleImgElement.setAttribute("id", "lector:style:img");
-    var head = document.querySelector("html > head");
-    head.appendChild(styleImgElement);
-  }
-
-  styleImgElement.textContent = "img {\n" +
-    "max-width: calc(" + bodyWidth  + "px - 4em);\n" +
-    "max-height: calc(" + bodyHeight  + "px - 4em);\n" +
-  "}";
 }
 
 var BUFFERING_DURATION_MS = 15;
