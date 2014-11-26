@@ -44,7 +44,7 @@ body {
   -ms-hyphens: auto;
 }
 
-body > * {
+#lector_root {
 /* Margins in pages */
   margin-left: 2em;
   margin-right: 2em;

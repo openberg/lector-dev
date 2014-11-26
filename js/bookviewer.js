@@ -517,6 +517,17 @@ ChapterContents.prototype = {
         a.setAttribute("href", "javascript:window.Lector.goto('" + href + "');");
       });
 
+      // Move the contents of the document inside a <div id="lector_root">
+      // to let us add margins without breaking existing layout.
+      console.log("ChapterContents", "Creating new root");
+      var root = xml.createElement("div");
+      root.setAttribute("id", "lector_root");
+      for (var child of [...xml.body.childNodes]) {
+        xml.body.removeChild(child);
+        root.appendChild(child);
+      }
+      xml.body.appendChild(root);
+
       console.log("ChapterContents", "Waiting until all rewrites are complete");
       return Promise.all(this._resources).then(() => {
         console.log("ChapterContents", "All resources are now available");
