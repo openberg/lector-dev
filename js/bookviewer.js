@@ -159,7 +159,7 @@ BookViewer.prototype.navigateTo = function(chapter, endOfChapter = false) {
     console.log("BookViewer", "navigateTo", "Got URL for chapter", url);
     this._view.chapterContentsByObjectURL.set(url, this._view.currentChapterContents);
     if (endOfChapter) {
-      url += "#lector:startpage=Infinity";
+      url += "#lector_end";
     } else if (anchor) {
       url += "#" + anchor;
     }
@@ -527,6 +527,12 @@ ChapterContents.prototype = {
         root.appendChild(child);
       }
       xml.body.appendChild(root);
+
+      // Add a specific node at the end of the document to be able to
+      // scroll quickly to the end.
+      var end = xml.createElement("div");
+      end.setAttribute("id", "lector_end");
+      xml.body.appendChild(end);
 
       console.log("ChapterContents", "Waiting until all rewrites are complete");
       return Promise.all(this._resources).then(() => {

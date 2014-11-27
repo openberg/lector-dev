@@ -273,39 +273,53 @@ function scrollToPosition(position) {
   document.body.style.transform = translation;
 }
 
+/**
+ * Get a named anchor in the document.
+ *
+ * @param {string} name The name of an anchor, which may
+ * correspond to the `id` of an element or to a <a name = ...>`.
+ * @return {Element|null}
+ */
+function getAnchor(name) {
+  // In HTML5, anchors map to <a id="...">,
+  // so we may find them with `document.getElementById`.
+  var element = document.getElementById(name);
+  if (element) {
+    return element;
+  }
+
+  // In older HTML, anchors map to <a name="...">`,
+  // so we need to walk all the anchors of the document
+  // until we find the right one.
+  return [...document.anchors].find(x => x.name == name);
+}
+
+/**
+ * Scroll to a page in the document.
+ *
+ * @param {number|Element} where The page to which to scroll.
+ * If an `Element`, scroll to the page containing the left of
+ * the element.
+ */
 function scrollToPage(where) {
   Touch.init();
   console.log("Contents", "scrollToPage", where);
   var width = gInnerWidth;
   var scrollMaxX = document.body.scrollWidth;
   var lastPage = Math.ceil(scrollMaxX / width) - 1;
-  if (where == Infinity) {
-    // Scroll to the last page
-    where = lastPage;
-  } else if (typeof where == "string") {
-    // In HTML5, anchors map to <a id="...">,
-    // so we may find them with `document.getElementById`.
-    var element = document.getElementById(where);
-    // In older HTML, anchors map to <a name="...">`,
-    // so we need to walk all the anchors of the document
-    // until we find the right one.
-    if (!element) {
-      for (var anchor of document.anchors) {
-        if (anchor.name == where) {
-          element = anchor;
-          break;
-        }
-      }
-    }
-    console.log("Contents", "scrollToPage", "element", element);
-    if (!element) {
+  if (where instanceof Element) {
+    console.log("Contents", "scrollToPage", "element", where);
+    if (!where) {
       // Could not find an anchor
       return;
     }
     // Pick the coordinates to scroll the element into view.
-    where = Math.floor(element.offsetLeft / width);
+    where = Math.floor(where.offsetLeft / width);
   }
   console.log("Content", "scrollToPage", "destination", where);
+  if (typeof where != "number") {
+    throw new TypeError("Expected a number");
+  }
   currentPage = where;
   window.parent.postMessage({method: "pagechange", args:[{page: where, lastPage: lastPage}]}, "*");
   scrollToPosition(currentPage * width);
@@ -348,8 +362,7 @@ function onstart() {
   console.log("Content", "onstart", window.location.hash);
   //
   // If the hash contains #lector:startpage=xxx, move
-  // to page xxx. xxx may be a number, including
-  // Infinity for the last page of the chapter.
+  // to page xxx, where xxx is a number.
   //
   const STARTPAGE_PREFIX = "#lector:startpage=";
   if (window.location.hash.startsWith(STARTPAGE_PREFIX)) {
@@ -364,7 +377,7 @@ function onstart() {
   } else if (window.location.hash) {
     var hash = window.location.hash.substring(1);
     window.location.hash = "";
-    scrollToPage(hash);
+    scrollToPage(getAnchor(hash));
   }
 
   //
