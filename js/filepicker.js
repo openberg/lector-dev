@@ -59,6 +59,7 @@ FilePicker.prototype = {
    * works better than using the default behavior of <input type="file">.
    */
   pickWithActivity: function() {
+    console.log("FilePicker", "pickWithActivity", "starting");
     var options = {
       name: "pick",
       data: {
@@ -80,17 +81,29 @@ FilePicker.prototype = {
    * Use a hidden <input type="file"> to request a file from the system.
    */
   pickWithInput: function() {
-    if (!this._input) {
-      // Create a hidden <inpyt type="file">
+    console.log("FilePicker", "pickWithInput", "starting", this._mimetype, new Error().stack);
+
+    if (this._input) {
+      console.log("FilePicker", "pickWithInput", "<input> already created");
+    } else {
+      console.log("FilePicker", "pickWithInput", "creating <input>");
+
+      var div = document.createElement("div");
+      div.classList.add("hidden_input_file");
+      this._element.appendChild(div);
+
+      // Create a hidden <input type="file">
       this._input = document.createElement("input");
       this._input.setAttribute("type", "file");
 
       // Set the types of files that it accepts
       this._input.setAttribute("accept", this._mimetype);
       this._input.classList.add("hidden_input_file");
-      this._element.appendChild(this._input);
+      div.appendChild(this._input);
+      console.log("FilePicker", "pickWithInput", "setting event listeners");
 
       this._input.addEventListener("change", e => {
+        console.log("FilePicker", "pickWithInput", "change", e);
         var files = this._input.files;
         if (!files || files.length == 0) {
           // No files opened, nothing to do
@@ -99,6 +112,12 @@ FilePicker.prototype = {
 
         this.notifications.notify("file:open", { file: files[0] });
       });
+      this._input.addEventListener("click", e => {
+        // Since we are going to simulate a click, let's make sure
+        // that we do not loop.
+        e.stopPropagation();
+      });
+      console.log("FilePicker", "pickWithInput", "ready");
     }
     this._input.click();
   }

@@ -34,6 +34,7 @@ html, body {
 }
 
 .menu {
+    z-index: 4;
     width: 100%;
     min-height: 2em;
     background-color:green;
