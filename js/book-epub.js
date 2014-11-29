@@ -73,17 +73,10 @@ var BookEpub = function(file) {
 
   promise = promise.then(() => {
     console.log("BookEPub", "Attempting to locate a table of contents");
-    // First try a epub 3 table of contents.
-    return this._initializeXHTMLToc();
-  });
 
-  promise = promise.then(toc => {
-    if (toc) {
-      return toc;
-    }
-    // If we don't have a epub 3 table of contents, perhaps we have
-    // a epub 2 table of contents?
-    return this._initializeNCXToc();
+    var promise = this._initializeXHTMLToc();
+    promise = unchain(promise, () => this._initializeNCXToc());
+    return promise;
   });
 
   promise = promise.then(toc => {
@@ -137,13 +130,10 @@ BookEpub.prototype = {
       }
       return this.getResource(navItem.getAttribute("href"));
     });
-    promise = promise.then(tocRes => {
+    promise = chain(promise, tocRes => {
       return tocRes.asXML(this, true);
     });
-    promise = promise.then(xml => {
-      if (!xml) {
-        return;
-      }
+    promise = chain(promise, xml => {
       var items = xml.querySelectorAll("html > body > nav > ol > li > a");
       console.log("BookEpub", "_initializeXHTMLToc", items);
       var toc = [];
@@ -153,7 +143,7 @@ BookEpub.prototype = {
         console.log("BookEPub", "_initializeXHTMLToc", title, href);
         toc.push({
           title: title,
-          resource: this.getResource(href)
+          chapter: href
         });
       }
       return toc;
@@ -181,25 +171,20 @@ BookEpub.prototype = {
       var tocHref = pkg.getElementById(tocId).getAttribute("href");
       return this.getResource(tocHref);
     });
-    promise = promise.then(tocRes => {
-      if (!tocRes) {
-        return;
-      }
+    promise = chain(promise, tocRes => {
       return tocRes.asXML(this, true);
     });
-    promise = promise.then(xml => {
-      if (!xml) {
-        return;
-      }
+    promise = chain(promise, xml => {
       var points = xml.querySelectorAll("ncx > navMap > navPoint");
       var toc = [];
       for (var point of points) {
         var index = Number(point.getAttribute("playOrder"));
-        toc[index - 1] = {
+        toc.push({
           title: point.querySelector("navLabel > text").textContent,
-          resource: this.getResource(index),
-        }
+          chapter: index,
+        });
       }
+      toc.sort((a, b) => {a.chapter <= b.chapter});
       return toc;
     });
     return promise;
@@ -339,6 +324,39 @@ BookEpub.open = function(source) {
   }
   return new BookEpub(source);
 };
+
+/**
+ * Behave as `p.then(onResult)`, unless `p`
+ * resolves to `undefined`, in which case
+ * resolve to `undefined`.
+ *
+ * @param {Promise} p
+ * @param {function} onResult
+ */
+function chain(p, onResult) {
+  return p.then(x => {
+    if (x == undefined) {
+      return undefined;
+    }
+    return onResult(x);
+  });
+}
+
+/**
+ * Resolve as `p`, unless `p` resolves to `undefined`,
+ * in which case, resolve as `f`.
+ *
+ * @param {Promise} p
+ * @param {function} f
+ */
+function unchain(p, f) {
+  return p.then(x => {
+    if (x != undefined) {
+      return x;
+    }
+    return f();
+  })
+}
 
 // Module definition
 return BookEpub;

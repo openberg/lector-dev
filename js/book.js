@@ -65,7 +65,7 @@ Book.prototype = {
   /**
    * Get the table of contents of the book, if available.
    *
-   * @type {Array<{title: string, resource: Book.Resource}> | null}
+   * @type {Array<{title: string, chapter: {number|string}}> | null}
    */
   get toc() {
     throw new Error("Not implemented: get toc()")
