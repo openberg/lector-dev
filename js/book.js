@@ -61,6 +61,15 @@ Book.prototype = {
   getResource: function(name) {
     throw new Error("Not implemented: getResource()");
   },
+
+  /**
+   * Get the table of contents of the book, if available.
+   *
+   * @type {Array<{title: string, resource: Book.Resource}> | null}
+   */
+  get toc() {
+    throw new Error("Not implemented: get toc()")
+  }
 };
 
 /**

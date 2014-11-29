@@ -56,7 +56,7 @@ var BookEpub = function(file) {
 
     this._package = pkg;
 
-    // Extract the table of contents
+    // Extract the list of chapters
     console.log("BookEpub", "I have the following files", [...this._archive.entries.keys()]);
     for (var itemref of pkg.querySelectorAll("package > spine > itemref")) {
       var item = this._getElementById(pkg, itemref.getAttribute("idref"));
@@ -65,20 +65,34 @@ var BookEpub = function(file) {
         console.log(new XMLSerializer().serializeToString(pkg));
       }
       var href = item.getAttribute("href");
-      var url;
-      try {
-        // The url may be absolute
-        url = (new URL(href)).href;
-      } catch (ex if ex instanceof TypeError) {
-        // ... or relative.
-        url = this._resolveTo ? this._resolveTo + "/" + href : href;
-      }
+      var url = this._getHref(href);
       console.log("Looking for url", url, href);
-      this._chapters.push(new Book.Resource(url, this._archive.entries.get(url)));
+      this._chapters.push(this.getResource(url));
     }
   });
 
-  promise = promise.then(resolveInitialized, ex => {
+  promise = promise.then(() => {
+    console.log("BookEPub", "Attempting to locate a table of contents");
+    // First try a epub 3 table of contents.
+    return this._initializeXHTMLToc();
+  });
+
+  promise = promise.then(toc => {
+    if (toc) {
+      return toc;
+    }
+    // If we don't have a epub 3 table of contents, perhaps we have
+    // a epub 2 table of contents?
+    return this._initializeNCXToc();
+  });
+
+  promise = promise.then(toc => {
+    this._toc = toc;
+    console.log("BookEPub", "toc", toc);
+    resolveInitialized();
+  });
+
+  promise = promise.then(null, ex => {
     // Make sure that errors are reported early.
     console.error("Error reading book metadata", ex, ex.stack);
     throw ex;
@@ -105,9 +119,106 @@ BookEpub.prototype = {
     }
   },
 
-  get _tocDocument() {
-    this._ensureInitialized();
-    return this._toc;
+  /**
+   * Initialize the table of contents in an epub 2 book.
+   *
+   * In epub 3, the table of contents is provided as a
+   * xhtml document, which may be found by a property `nav`.
+   */
+  _initializeXHTMLToc() {
+    console.log("BookEPub", "_initializeXHTMLToc", "starting");
+    var promise = Promise.resolve();
+    promise = promise.then(() => {
+      var pkg = this._package;
+      var navItem = pkg.querySelector("[properties='nav']");
+      if (!navItem) {
+        console.log("BookEPub", "_initializeXHTMLToc", "no `nav` item");
+        return;
+      }
+      return this.getResource(navItem.getAttribute("href"));
+    });
+    promise = promise.then(tocRes => {
+      return tocRes.asXML(this, true);
+    });
+    promise = promise.then(xml => {
+      if (!xml) {
+        return;
+      }
+      var items = xml.querySelectorAll("html > body > nav > ol > li > a");
+      console.log("BookEpub", "_initializeXHTMLToc", items);
+      var toc = [];
+      for (var item of items) {
+        var title = item.getAttribute("title");
+        var href = this._getHref(item.getAttribute("href"));
+        console.log("BookEPub", "_initializeXHTMLToc", title, href);
+        toc.push({
+          title: title,
+          resource: this.getResource(href)
+        });
+      }
+      return toc;
+    });
+    return promise;
+  },
+
+  /**
+   * Initialize the table of contents in an epub 2 book.
+   *
+   * In epub 2, the table of contents is provided as a
+   * `.ncx` document, which may be found from the `spine`.
+   */
+  _initializeNCXToc() {
+    console.log("BookEPub", "_initializeNCXToc", "starting");
+    var promise = Promise.resolve();
+    promise = promise.then(() => {
+      var pkg = this._package;
+      var spine = pkg.querySelector("package > spine");
+      var tocId = spine.getAttribute("toc");
+      if (!tocId) {
+        console.log("BookEPub", "_initializeNCXToc", "no spine.toc");
+        return;
+      }
+      var tocHref = pkg.getElementById(tocId).getAttribute("href");
+      return this.getResource(tocHref);
+    });
+    promise = promise.then(tocRes => {
+      if (!tocRes) {
+        return;
+      }
+      return tocRes.asXML(this, true);
+    });
+    promise = promise.then(xml => {
+      if (!xml) {
+        return;
+      }
+      var points = xml.querySelectorAll("ncx > navMap > navPoint");
+      var toc = [];
+      for (var point of points) {
+        var index = Number(point.getAttribute("playOrder"));
+        toc[index - 1] = {
+          title: point.querySelector("navLabel > text").textContent,
+          resource: this.getResource(index),
+        }
+      }
+      return toc;
+    });
+    return promise;
+  },
+
+  /**
+   * Normalize a url in the package document.
+   */
+  _getHref: function(href) {
+    try {
+      // The url may be absolute
+      return (new URL(href)).href;
+    } catch (ex if ex instanceof TypeError) {
+      // ... or relative.
+      while (href.startsWith("../")) {
+        href = href.substring(3);
+      }
+      return this._resolveTo ? this._resolveTo + "/" + href : href;
+    }
   },
 
   get _packageDocument() {
@@ -147,7 +258,18 @@ BookEpub.prototype = {
    * Get the list of chapters
    */
   get chapters() {
+    this._ensureInitialized();
     return this._chapters;
+  },
+
+  /**
+   * Get the table of contents.
+   *
+   * @return {Array<{resource: Book.Resource, title: string}>|null}
+   */
+  get toc() {
+    this._ensureInitialized();
+    return this._toc;
   },
 
   getResource: function(key) {
