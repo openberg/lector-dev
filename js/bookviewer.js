@@ -260,6 +260,7 @@ BookViewer.prototype._handleMessage = function(e) {
     this.notifications.notify("page:changing", data.args[0]);
     break;
   case "load":
+    this._view.chapterInfo.title = data.args[0].title;
     this.notifications.notify("chapter:enter", { chapter: this._view.chapterInfo });
     break;
   default:

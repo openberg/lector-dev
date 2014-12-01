@@ -86,7 +86,7 @@ window.Lector.goto = function(href) {
 //
 
 window.addEventListener("load", function() {
-  window.parent.postMessage({method: "load", args:[]}, "*");
+  window.parent.postMessage({method: "load", args:[{title: document.title}]}, "*");
   onstart();
 });
 
