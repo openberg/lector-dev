@@ -51,6 +51,7 @@ bookViewer.notifications.addObserver("chapter:exit", function(event) {
 bookViewer.notifications.addObserver("chapter:enter", function(event) {
   console.log("App", "Entering chapter", event);
   Menus.top.showText(event.chapter.title);
+  document.title = "Lector: " + event.chapter.book.title + " (" + event.chapter.title + ")";
 });
 
 //
@@ -62,6 +63,7 @@ bookViewer.notifications.addObserver("book:open", function(event) {
   $("welcome").classList.add("scrolledleft");
   $("contents").classList.remove("invisible");
   Menus.top.showText(event.book.title);
+  document.title = "Lector: " + event.book.title;
 });
 bookViewer.notifications.addObserver("book:opening", function(event) {
   $("welcome").classList.add("scrolledleft");
@@ -71,6 +73,7 @@ bookViewer.notifications.addObserver("book:opening:failed", function(event) {
   $("welcome").classList.remove("scrolledleft");
   $("contents").classList.add("invisible");
   Menus.bottom.showText("Could not open book");
+  document.title = "Lector";
 });
 
 

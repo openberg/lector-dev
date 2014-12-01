@@ -142,6 +142,7 @@ BookViewer.prototype.navigateTo = function(chapter, endOfChapter = false) {
       throw new Error("Could not find chapter");
     }
     this._view.chapterInfo = {
+      book: this._view.book,
       title: null,
       num: num,
     };
