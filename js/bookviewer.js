@@ -448,9 +448,9 @@ ChapterContents.prototype = {
 
       // 3. Rewrite internal links
       // (scripts, stylesheets, etc.)
-      var generateLink = (node, attribute) => {
-        var href = node.getAttribute(attribute);
-        console.log("ChapterContents", "Generating link for", node, attribute, href);
+      var generateLink = (node, attribute, ns = null) => {
+        var href = ns ? node.getAttributeNS(ns, attribute) : node.getAttribute(attribute);
+        console.log("ChapterContents", "Generating link for", node, attribute, href, ns);
         if (!href) {
           console.log("ChapterContents", "No link for", href);
           // No link at all, e.g. anchors, inline scripts.
@@ -476,7 +476,11 @@ ChapterContents.prototype = {
         var promise = resource.asObjectURL(this);
         promise = promise.then(url => {
           console.log("ChapterContents", "Got a url for", href, url);
-          node.setAttribute(attribute, url);
+          if (ns) {
+            node.setAttributeNS(ns, attribute, url);
+          } else {
+            node.setAttribute(attribute, url);
+          }
           return resource;
         });
         this._resources.push(promise);
@@ -497,6 +501,9 @@ ChapterContents.prototype = {
         if (img.getAttribute("height") == "100%") {
           img.removeAttribute("height");
         }
+      });
+      [...xml.querySelectorAll("html > body svg image")].forEach(img => {
+        generateLink(img, "href", "http://www.w3.org/1999/xlink");
       });
       [...xml.querySelectorAll("html > body iframe")].forEach(iframe => {
         generateLink(iframe, "src");

@@ -54,3 +54,10 @@ img {
   max-width: calc(100vw - 4em);
   max-height: calc(100vh - 2em);
 }
+
+#lector_root > * {
+/* Workaround for a bug in gitbook (Calibre?) ebooks,
+   which cannot be displayed properly due to a
+   `overflow:hidden` directive. */
+  overflow: visible !important;
+}
