@@ -49,7 +49,7 @@ Menu.prototype = {
       });
     }
     promise = promise.then(() => {
-      elt.textContent = text;
+      this.textarea.textContent = text;
       elt.classList.remove("hidden_text");
       this.autoHide();
       return this._afterTransition(() => {
