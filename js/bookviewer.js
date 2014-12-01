@@ -448,51 +448,14 @@ ChapterContents.prototype = {
 
       // 3. Rewrite internal links
       // (scripts, stylesheets, etc.)
-      var generateLink = (node, attribute, ns = null) => {
-        var href = ns ? node.getAttributeNS(ns, attribute) : node.getAttribute(attribute);
-        console.log("ChapterContents", "Generating link for", node, attribute, href, ns);
-        if (!href) {
-          console.log("ChapterContents", "No link for", href);
-          // No link at all, e.g. anchors, inline scripts.
-          return;
-        }
-        try {
-          new URL(href);
-          console.log("ChapterContents", "Link for", href, "is absolute, nothing to do");
-          // If we reach this point, the link is absolute, we have
-          // nothing to do.
-          return;
-        } catch (ex) {
-          // Link is relative, we need to rewrite it and generate
-          // a URL for its contents.
-        }
-        var resource = this._book.getResource(href);
-        if (!resource) {
-          console.log("ChapterContents", "Could not find resource for", href);
-          return;
-        } else {
-          console.log("ChapterContents", "Found a resource for", href);
-        }
-        var promise = resource.asObjectURL(this);
-        promise = promise.then(url => {
-          console.log("ChapterContents", "Got a url for", href, url);
-          if (ns) {
-            node.setAttributeNS(ns, attribute, url);
-          } else {
-            node.setAttribute(attribute, url);
-          }
-          return resource;
-        });
-        this._resources.push(promise);
-      };
       [...xml.querySelectorAll("html > head > link")].forEach(link => {
         if (link.getAttribute("rel") != "stylesheet") {
           return;
         }
-        generateLink(link, "href");
+        this._generateLink(link, "href");
       });
       [...xml.querySelectorAll("html > body img")].forEach(img => {
-        generateLink(img, "src");
+        this._generateLink(img, "src");
         // Nicety hack: images with width="100%" or height="100%" are bound
         // to break. Let's get rid of these attributes.
         if (img.getAttribute("width") == "100%") {
@@ -503,13 +466,13 @@ ChapterContents.prototype = {
         }
       });
       [...xml.querySelectorAll("html > body svg image")].forEach(img => {
-        generateLink(img, "href", "http://www.w3.org/1999/xlink");
+        this._generateLink(img, "href", "http://www.w3.org/1999/xlink");
       });
       [...xml.querySelectorAll("html > body iframe")].forEach(iframe => {
-        generateLink(iframe, "src");
+        this._generateLink(iframe, "src");
       });
       [...xml.querySelectorAll("html > head script")].forEach(script => {
-        generateLink(script, "src");
+        this._generateLink(script, "src");
       });
       [...xml.querySelectorAll("html > body a")].forEach(a => {
         console.log("ChapterContents", "Rewriting link", a);
@@ -625,7 +588,59 @@ ChapterContents.prototype = {
       throw error;
     });
     return promise;
+  },
+
+  /**
+   * Enqueue a background request for rewriting a link to
+   * an internal resource.
+   *
+   * In the background, this method extracts the contents
+   * of the resource and generates an object URL.
+   *
+   * @param {Node} node The node holding the link, e.g.
+   * <a>, <img>, ...
+   * @param {string} attribute The name of the attribute
+   * for the link, e.g. "href" for <a href">
+   * @param {string=} ns The namespace for the attribute.
+   */
+  _generateLink: function(node, attribute, ns = null) {
+    var href = ns ? node.getAttributeNS(ns, attribute) : node.getAttribute(attribute);
+    console.log("ChapterContents", "Generating link for", node, attribute, href, ns);
+    if (!href) {
+      console.log("ChapterContents", "No link for", href);
+      // No link at all, e.g. anchors, inline scripts.
+      return;
+    }
+    try {
+      new URL(href);
+      console.log("ChapterContents", "Link for", href, "is absolute, nothing to do");
+      // If we reach this point, the link is absolute, we have
+      // nothing to do.
+      return;
+    } catch (ex) {
+      // Link is relative, we need to rewrite it and generate
+      // a URL for its contents.
+    }
+    var resource = this._book.getResource(href);
+    if (!resource) {
+      console.log("ChapterContents", "Could not find resource for", href);
+      return;
+    } else {
+      console.log("ChapterContents", "Found a resource for", href);
+    }
+    var promise = resource.asObjectURL(this);
+    promise = promise.then(url => {
+      console.log("ChapterContents", "Got a url for", href, url);
+      if (ns) {
+        node.setAttributeNS(ns, attribute, url);
+      } else {
+        node.setAttribute(attribute, url);
+      }
+      return resource;
+    });
+    this._resources.push(promise);
   }
+
 };
 
 /**
