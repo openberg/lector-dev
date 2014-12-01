@@ -33,6 +33,7 @@ function Library(openers) {
   // cannot add anything to the list.
   //
   this._entries = [
+    new Entry(this, "Welcome to Lector", "The OpenBerg team", UrlUtils.toURL("samples/lector.epub")),
     new Entry(this, "Alice in Wonderland", "Lewis Caroll", UrlUtils.toURL("samples/alice.epub")),
     new Entry(this, "1984", "George Orwell", UrlUtils.toURL("samples/1984.epub")),
   ];
