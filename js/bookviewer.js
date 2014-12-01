@@ -30,7 +30,6 @@ function BookViewer(element) {
   this.notifications = new Notifications([
     "page:changing",
     "chapter:exit",
-    "chapter:titleavailable",
     "chapter:enter",
     "book:open",
     "book:opening",
