@@ -121,34 +121,16 @@ BookViewer.prototype.navigateTo = function(chapter, endOfChapter = false) {
 
   // Before proceeding, make sure that the book is fully initialized.
   var promise = this._view.book.init(endOfChapter);
-  var anchor = null;
-
   promise = promise.then(() => {
     console.log("BookViewer", "navigateTo", "Book is initialized");
-    var entry = null;
-    var num = -1;
-    if (typeof chapter == "number") {
-      console.log("BookViewer", "navigateTo", "chapter is a number");
-      num = chapter;
-    } else {
-      console.log("BookViewer", "navigateTo", "chapter is a url, looking for number");
-      [chapter, anchor] = chapter.split("#");
-      num = this._view.book.chapters.findIndex(x => {
-        return x._name == chapter;
-      });
-    }
-    entry = this._view.book.chapters[num];
-    if (entry == null) {
-      throw new Error("Could not find chapter");
-    }
+    this._view.currentChapterContents = this._getChapterContentsForChapter(chapter);
     this._view.chapterInfo = {
       book: this._view.book,
       title: null,
-      num: num,
+      num: this._view.currentChapterContents.num,
     };
     this.notifications.notify("chapter:exit", { chapter: this._view.chapterInfo });
     console.log("BookViewer", "navigateTo", "Opening document");
-    this._view.currentChapterContents = this._getChapterContentsForEntry(entry);
     return this._view.currentChapterContents.load();
   });
   promise = promise.then(() => {
@@ -158,9 +140,13 @@ BookViewer.prototype.navigateTo = function(chapter, endOfChapter = false) {
   promise = promise.then(url => {
     console.log("BookViewer", "navigateTo", "Got URL for chapter", url);
     this._view.chapterContentsByObjectURL.set(url, this._view.currentChapterContents);
+    var anchor = null;
     if (endOfChapter) {
-      url += "#lector_end";
-    } else if (anchor) {
+      anchor = "lector_end";
+    } else if (typeof chapter == "string") {
+      [, anchor] = chapter.split("#");
+    }
+    if (anchor) {
       url += "#" + anchor;
     }
     this._iframe.setAttribute("src", url);
@@ -172,24 +158,39 @@ BookViewer.prototype.navigateTo = function(chapter, endOfChapter = false) {
 };
 
 /**
- * Get the chapter contents for an entry.
+ * Get the chapter contents for a chapter.
  *
- * If a ChapterContents object has already been created for this entry, reuse it.
+ * If a ChapterContents object has already been created for this chapter, reuse it.
  * Otherwise, construct a new one.
  *
- * @param {Book.Resource} entry The entry for which we try to locate a ChapterContents.
+ * @param {string|number} chapter If a number, the index of the chapter
+ * in the table of contents of the book. If a string, the chapter at
+ * that path in the book.
  * @return {ChapterContents}
  */
-BookViewer.prototype._getChapterContentsForEntry = function(entry) {
-  if (!(entry instanceof Book.Resource)) {
-    throw new TypeError("Expected an instance of Book.Resource");
+BookViewer.prototype._getChapterContentsForChapter = function(chapter) {
+  var entry = null;
+  var num = -1;
+  if (typeof chapter == "number") {
+    console.log("BookViewer", "navigateTo", "chapter is a number");
+    num = chapter;
+  } else {
+    console.log("BookViewer", "navigateTo", "chapter is a url, looking for number");
+    [chapter] = chapter.split("#");
+    num = this._view.book.chapters.findIndex(x => {
+      return x._name == chapter;
+    });
+  }
+  entry = this._view.book.chapters[num];
+  if (entry == null) {
+    throw new Error("Could not find chapter");
   }
   var contents = this._view.chapterContentsByEntry.get(entry);
   if (contents) {
     console.log("BookViewer", "_getChapterContentsForEntry", "Reusing existing ChapterContents");
   } else {
     console.log("BookViewer", "_getChapterContentsForEntry", "Constructing new ChapterContents");
-    contents = new ChapterContents(entry, this._view.book);
+    contents = new ChapterContents(entry, num, this._view.book);
     this._view.chapterContentsByEntry.set(entry, contents);
   }
   return contents;
@@ -338,22 +339,41 @@ BookViewer.prototype._keyboardNavigation = function(code) {
  *
  * @param {Book.Resource} entry The entry holding the raw
  * data for the chapter.
+ * @param {number} num The index of the chapter in the table
+ * of contents.
  * @param {Book} book The book containing the chapter.
  */
-function ChapterContents(entry, book) {
+function ChapterContents(entry, num, book) {
+  if (!entry || !(entry instanceof Book.Resource)) {
+    throw new TypeError("Not a Book.Entry");
+  }
   /**
    * The entry holding the raw data for the chapter.
    *
-   * @type {Book.Entry}
+   * @type {Book.Resource}
    */
   this._entry = entry;
 
+  if (typeof num != "number") {
+    throw new TypeError("Not a number");
+  }
+  /**
+   * The index of the chapter in the table of contents.
+   *
+   * @type {number}
+   */
+  this._num = num;
+
+  if (!book || !(book instanceof Book)) {
+    throw new TypeError("Not a Book");
+  }
   /**
    * The book containing the chapter.
    *
    * @type {Book}
    */
   this._book = book;
+
 
   /**
    * The title of the chapter.
@@ -397,6 +417,10 @@ ChapterContents.prototype = {
    */
   get entry() {
     return this._entry;
+  },
+
+  get num() {
+    return this._num;
   },
 
   /**
