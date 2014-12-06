@@ -190,4 +190,15 @@ if (params) {
   }
 }
 
+$("menu_top_right").addEventListener("click", () => {
+  var elt = $("menu_top_right_contents");
+  if (elt.classList.contains("folded_up")) {
+    elt.classList.add("unfolded_up");
+    elt.classList.remove("folded_up");
+  } else {
+    elt.classList.remove("unfolded_up");
+    elt.classList.add("folded_up");
+  }
+});
+
 });

@@ -25,51 +25,6 @@ html, body {
     z-index: 5;
 }
 
-.left {
-    left: 0;
-}
-
-.right {
-    right: 0;
-}
-
-.menu {
-    z-index: 4;
-    width: 100%;
-    min-height: 2em;
-    background-color:green;
-    position: absolute;
-    transition-property: opacity;
-    transition-duration: 1s;
-    text-align: center;
-    color: white;
-}
-
-.menu.hidden_text {
-  color: green;
-}
-
-.top {
-  position: absolute;
-  top: 0;
-}
-
-.bottom {
-  position: absolute;
-  bottom: 0;
-}
-
-.menu_height {
-  padding: .5em;
-  width: 1em;
-  height: 1em;
-  cursor: pointer;
-}
-
-.fade_inout {
-  transition-property: opacity;
-  transition-duration: 1s;
-}
 
 .hidden {
     opacity: 0;
