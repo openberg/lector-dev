@@ -56,7 +56,19 @@ function BookViewer(element) {
    */
   this._view = null;
 
+  /**
+   * The size of the font, as a CSS property.
+   *
+   * @type {string}
+   */
   this._fontSize = Config.fontSize;
+
+  /**
+   * The name of the theme (may be `null` for no theme).
+   *
+   * @type {string}
+   */
+  this._theme = Config.theme;
 
   // Handle messages sent from the book itself.
   window.addEventListener("message", e => this._handleMessage(e));
@@ -110,6 +122,22 @@ Object.defineProperty(BookViewer.prototype, "fontSize", {
   set: function(x) {
     this._fontSize = x;
     this._iframe.contentWindow.postMessage({method: "setFontSize", args:[x]}, "*");
+  }
+});
+
+/**
+ * The theme to use in this bookviewer. Setting this
+ * will asynchronously update the display.
+ *
+ * @type {string} The name of a css file.
+ */
+Object.defineProperty(BookViewer.prototype, "theme", {
+  get: function() {
+    return this._theme;
+  },
+  set: function(x) {
+    this._theme = x;
+    this._iframe.contentWindow.postMessage({method: "setTheme", args:[x]}, "*");
   }
 });
 
@@ -484,7 +512,17 @@ ChapterContents.prototype = {
       injectLink.setAttribute("href", UrlUtils.toURL("content/books.css").href);
       head.appendChild(injectLink);
 
-      // 1.2 Customize the font size
+      // 1.2 The theme
+      var injectLinkTheme = xml.createElement("link");
+      injectLinkTheme.setAttribute("id", "lector:injectLink:theme");
+      injectLinkTheme.setAttribute("rel", "stylesheet");
+      injectLinkTheme.setAttribute("type", "text/css");
+      if (this._book.theme) {
+        injectLinkTheme.setAttribute("href", UrlUtils.toURL("theme").href);
+      }
+      head.appendChild(injectLinkTheme);
+
+      // 1.3 Customize the font size
       body.style.fontSize = this._book.fontSize;
 
       // 2. Inject global book scripts

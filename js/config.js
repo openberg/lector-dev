@@ -35,6 +35,13 @@ return {
   fontSize: "15pt",
 
   /**
+   * The theme to use.
+   *
+   * @type {string|null} Relative path of a CSS file.
+   */
+  theme: null,
+
+  /**
    * Various testing flags.
    */
   TESTING: {

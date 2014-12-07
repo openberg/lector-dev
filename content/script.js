@@ -353,6 +353,11 @@ function setFontSize(size) {
   document.body.style.fontSize = size;
 }
 
+function setTheme(path) {
+  var link = document.getElementById("lector:injectLink:theme");
+  link.setAttribute("href", path);
+}
+
 //
 // Startup
 //
