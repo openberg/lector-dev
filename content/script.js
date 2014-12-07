@@ -243,6 +243,9 @@ window.addEventListener("message", function(e) {
     case "scrollToPage":
       scrollToPage(e.data.args[0]);
       break;
+    case "setFontSize":
+      setFontSize(e.data.args[0]);
+      break;
     case "eval":
       // Cheat mode, useful for debugging
       console.log("eval", eval(e.data.args[0]));
@@ -339,6 +342,15 @@ function scrollBy(deltaPages, mayChangeChapter = true) {
     }
   }
   scrollToPage(nextPage);
+}
+
+/**
+ * Set the font size.
+ *
+ * @param {string} size The size as a CSS property.
+ */
+function setFontSize(size) {
+  document.body.style.fontSize = size;
 }
 
 //

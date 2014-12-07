@@ -1,8 +1,11 @@
 define(['js/book',
+        'js/config',
         'js/notifications',
         'js/urlutils'],
   function(Book,
-          Notifications, UrlUtils) {
+           Config,
+           Notifications,
+           UrlUtils) {
 "use strict";
 
 /**
@@ -53,6 +56,8 @@ function BookViewer(element) {
    */
   this._view = null;
 
+  this._fontSize = Config.fontSize;
+
   // Handle messages sent from the book itself.
   window.addEventListener("message", e => this._handleMessage(e));
 
@@ -91,6 +96,22 @@ BookViewer.prototype.view = function(book, chapter = 0, endOfChapter = false) {
   });
   return promise;
 };
+
+/**
+ * The font size to use in this bookviewer. Setting this
+ * font size will asynchronously update the display.
+ *
+ * @type {string} The font size, as a CSS property.
+ */
+Object.defineProperty(BookViewer.prototype, "fontSize", {
+  get: function() {
+    return this._fontSize;
+  },
+  set: function(x) {
+    this._fontSize = x;
+    this._iframe.contentWindow.postMessage({method: "setFontSize", args:[x]}, "*");
+  }
+});
 
 /**
  * Move fowards/backwards by a number of pages.
@@ -140,7 +161,7 @@ BookViewer.prototype.navigateTo = function(chapter, endOfChapter = false) {
   promise = promise.then(url => {
     console.log("BookViewer", "navigateTo", "Got URL for chapter", url);
     this._view.chapterContentsByObjectURL.set(url, this._view.currentChapterContents);
-    var anchor = null;
+    var anchor = "";
     if (endOfChapter) {
       anchor = "lector_end";
     } else if (typeof chapter == "string") {
@@ -450,17 +471,21 @@ ChapterContents.prototype = {
       // Adapt XML document for proper display.
       //
       var head = xml.querySelector("html > head");
+      var body = xml.querySelector("html > body");
 
       this._title = head.querySelector("title").textContent;
 
       // 1. Inject global book stylesheet
-      // 1.1 The part that is shared by all browsers
+      // 1.1 The static part
       var injectLink = xml.createElement("link");
       injectLink.setAttribute("id", "lector:injectLink");
       injectLink.setAttribute("rel", "stylesheet");
       injectLink.setAttribute("type", "text/css");
       injectLink.setAttribute("href", UrlUtils.toURL("content/books.css").href);
       head.appendChild(injectLink);
+
+      // 1.2 Customize the font size
+      body.style.fontSize = this._book.fontSize;
 
       // 2. Inject global book scripts
       // 2.1 The part that ensures that we can navigate

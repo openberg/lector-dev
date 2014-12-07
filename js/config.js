@@ -30,6 +30,11 @@ return {
   },
 
   /**
+   * The size of book fonts, as a CSS property.
+   */
+  fontSize: "15pt",
+
+  /**
    * Various testing flags.
    */
   TESTING: {
