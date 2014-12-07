@@ -202,4 +202,8 @@ $("menu_top_right").addEventListener("click", event => {
   }
 });
 
+$("menu_top_right_contents").addEventListener("click", event => {
+  event.stopPropagation();
+});
+
 });
