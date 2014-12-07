@@ -190,7 +190,8 @@ if (params) {
   }
 }
 
-$("menu_top_right").addEventListener("click", () => {
+$("menu_top_right").addEventListener("click", event => {
+  event.stopPropagation();
   var elt = $("menu_top_right_contents");
   if (elt.classList.contains("folded_up")) {
     elt.classList.add("unfolded_up");
