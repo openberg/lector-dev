@@ -501,7 +501,7 @@ ChapterContents.prototype = {
       var head = xml.querySelector("html > head");
       var body = xml.querySelector("html > body");
 
-      this._title = head.querySelector("title").textContent;
+      this._title = xml.querySelector("title").textContent;
 
       // 1. Inject global book stylesheet
       // 1.1 The static part
