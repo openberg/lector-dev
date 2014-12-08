@@ -45,8 +45,11 @@ bookViewer.notifications.addObserver("page:changing", function(event) {
   console.log("App", "Moved to page", event);
   $("menu_bottom").textContent = "Page " + (event.page + 1) + "/" + (event.lastPage + 1) + " in document";
 });
+
+
 bookViewer.notifications.addObserver("chapter:exit", function(event) {
   Menus.bottom.showText("(Loading)");
+ 
 });
 bookViewer.notifications.addObserver("chapter:enter", function(event) {
   console.log("App", "Entering chapter", event);
@@ -64,7 +67,11 @@ bookViewer.notifications.addObserver("book:open", function(event) {
   $("contents").classList.remove("invisible");
   Menus.top.showText(event.book.title);
   document.title = "Lector: " + event.book.title;
+
 });
+
+
+
 bookViewer.notifications.addObserver("book:opening", function(event) {
   $("welcome").classList.add("scrolledleft");
   $("contents").classList.remove("invisible");
@@ -132,7 +139,12 @@ var library = new Library([BookEPub]);
     var li = document.createElement("li");
     li.classList.add("library_entry");
     li.addEventListener("click", function() {
-      //
+	
+     
+		var elmt = document.getElementById("info");
+		elmt.style.display = "block";
+
+		setTimeout(function(){	var elmt = document.getElementById("info"); elmt.style.opacity = "0";},3000);
       // If the user clicks on a book, attempt to
       // open it.
       //
