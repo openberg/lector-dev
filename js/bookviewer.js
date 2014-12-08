@@ -62,7 +62,6 @@ function BookViewer(element) {
    * @type {string}
    */
   this._fontSize = Config.BookViewer.fontSize;
-  console.log("instanciation this._fontSize", this._fontSize);
 
   /**
    * The name of the theme (may be `null` for no theme).
@@ -116,7 +115,6 @@ BookViewer.prototype.view = function(book, chapter = 0, endOfChapter = false) {
  *
  * @type {string} The font size, as a CSS property.
  */
-
 Object.defineProperty(BookViewer.prototype, "fontSize", {
   get: function() { 
     return this._fontSize; 
@@ -126,7 +124,6 @@ Object.defineProperty(BookViewer.prototype, "fontSize", {
     this._iframe.contentWindow.postMessage({method: "setFontSize", args:[x]}, "*");
   }
 });
-
 /**
  * The theme to use in this bookviewer. Setting this
  * will asynchronously update the display.
@@ -394,6 +391,7 @@ BookViewer.prototype._keyboardNavigation = function(code) {
  * @param {number} num The index of the chapter in the table
  * of contents.
  * @param {Book} book The book containing the chapter.
+ * @param {BookViewer} bookViewer the bookViewer who's gonna display the content of the book
  */
 function ChapterContents(entry, num, book, bookViewer) {
   if (!entry || !(entry instanceof Book.Resource)) {
