@@ -568,6 +568,7 @@ ChapterContents.prototype = {
         if (!href || href.startsWith("#") || href.startsWith("javascript") || href.contains("://")) {
           // Not a link internal to the book.
           console.log("ChapterContents", "External link, nothing to rewrite", a);
+          a.setAttribute('target', '_blank');
           return;
         }
         // At this stage, we assume that this is a link internal to the book.
