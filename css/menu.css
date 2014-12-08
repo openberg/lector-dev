@@ -106,10 +106,13 @@ span.button {
   height: 1em;
   padding: 0;
   margin: 0;
-  text-align: center;
+  /*text-align: center;*/
+  text-align: bottom;
   vertical-align: middle;
+ vertical-align: bottom;
   display: inline-block;
   background-color: rgb(0, 140, 0);
+ 
 }
 
 span.button.lowered {
