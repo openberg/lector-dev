@@ -29,10 +29,12 @@ return {
     DEBUG = x;
   },
 
-  /**
-   * The size of book fonts, as a CSS property.
-   */
-  fontSize: "15pt",
+  BookViewer: {
+    /**
+     * The size of book fonts, as a CSS property.
+     */
+    fontSize: "15px",
+  },
 
   /**
    * The theme to use.
