@@ -191,6 +191,7 @@ Book.open = function(source, openers) {
     // This is already a Book, let's just return it.
     return source;
   }
+  console.log("Book", "open", openers);
   var book;
   for (var opener of openers) {
     book = opener.open(source);

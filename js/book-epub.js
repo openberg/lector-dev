@@ -118,7 +118,7 @@ BookEpub.prototype = {
    * In epub 3, the table of contents is provided as a
    * xhtml document, which may be found by a property `nav`.
    */
-  _initializeXHTMLToc() {
+  _initializeXHTMLToc: function() {
     console.log("BookEPub", "_initializeXHTMLToc", "starting");
     var promise = Promise.resolve();
     promise = promise.then(() => {
@@ -157,7 +157,7 @@ BookEpub.prototype = {
    * In epub 2, the table of contents is provided as a
    * `.ncx` document, which may be found from the `spine`.
    */
-  _initializeNCXToc() {
+  _initializeNCXToc: function() {
     console.log("BookEPub", "_initializeNCXToc", "starting");
     var promise = Promise.resolve();
     promise = promise.then(() => {
@@ -168,7 +168,12 @@ BookEpub.prototype = {
         console.log("BookEPub", "_initializeNCXToc", "no spine.toc");
         return;
       }
-      var tocHref = pkg.getElementById(tocId).getAttribute("href");
+      var tocElem = pkg.getElementById(tocId);
+      if (!tocElem) {
+        console.log("BookEpub", "_initializeNCXToc", "no toc element");
+        return;
+      }
+      var tocHref = tocElem.getAttribute("href");
       return this.getResource(tocHref);
     });
     promise = chain(promise, tocRes => {
