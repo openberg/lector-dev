@@ -23,6 +23,8 @@ html, body {
     position: absolute;
     bottom: 0;
     z-index: 5;
+    width: 20%;
+    height: 6%;
 }
 
 
