@@ -16,9 +16,25 @@ type="text/javascript" defer="defer"></script>
 
 <link rel="stylesheet" type="text/css" href="css/style.css" />
 <link rel="stylesheet" type="text/css" href="css/menu.css" />
-<link rel="stylesheet" type="text/css" href="lib/Font-Awesome/css/font-awesome.min.css" />
+
+<link rel="icon" type="image/png" href="img/icon60.png" />
+
+<script>
+
+function testFatArrowSupport() {
+	try {
+		eval("x => 0");
+	} catch (e) {
+		if (e instanceof SyntaxError) {
+			alert("Fat arrow are not supported.");	
+		}
+	}
+}
+
+</script>
+
 </head>
-<body>
+<body onload="testFatArrowSupport()">
 
 <!-- Navigation arrows -->
 <div id="arrows">
