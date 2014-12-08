@@ -138,6 +138,11 @@ var library = new Library([BookEPub]);
       //
       console.log("App", "Library", "Opening", entry.title);
       entry.open().then(book => bookViewer.view(book));;
+
+      //
+      //If the user clicks on a book, it loads in mode fullscreen
+      //
+      document.body.mozRequestFullScreen();
     });
     libraryElement.insertBefore(li, $("pick"));
 
