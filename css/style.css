@@ -23,11 +23,14 @@ html, body {
     position: absolute;
     bottom: 0;
     z-index: 5;
-    width: 20%;
-    height: 6%;
 }
 
-
+@media (min-width: 700px) {
+    .arrow {
+	    font-size: 200%;
+    }
+}
+	
 .hidden {
     opacity: 0;
 }
@@ -43,42 +46,42 @@ html, body {
 }
 
 .scrolledleft {
-  transition-property: transform;
-  transition-duration: 1s;
-  transform: translateX(-100%);
+    transition-property: transform;
+    transition-duration: 1s;
+    transform: translateX(-100%);
 }
 
 ul.library_entries {
-  list-style: none;
-  padding:0;
+    list-style: none;
+    padding:0;
 }
 
 li.library_entry {
-  width: 100%;
-  max-width: 300px;
-  margin-left: auto;
-  margin-right: auto;
-  padding-left: 0;
-  padding-right: 0
-  padding-bottom: 1em;
-  padding-top: 1em;
-  vertical-align: middle;
-  border-bottom: inset black 1px;
-  transition: background-color 1s;
-  cursor: pointer;
+    width: 100%;
+    max-width: 300px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 0;
+    padding-right: 0;
+    padding-bottom: 1em;
+    padding-top: 1em;
+    vertical-align: middle;
+    border-bottom: inset black 1px;
+    transition: background-color 1s;
+    cursor: pointer;
 }
 
 .book_title {
-  font-style: italic;
+    font-style: italic;
 }
 
 li.library_entry:hover {
-  background-color: white;
+    background-color: white;
 }
 
 a {
-  text-decoration: none;
-  color: inherit;
+    text-decoration: none;
+    color: inherit;
 }
 #welcome {
     width: 100%;
