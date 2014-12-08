@@ -1,0 +1,8 @@
+## Jekyll/Githup pages configuration
+
+# Ignore Font-Awesome `src` folder which is the source repository for the lib's
+# own Github pages.
+# It prevents `include` directives in Font-Awesome pages from being executed,
+# which would cause a jekyll build to fail (the _include repository isn't at
+# the project's root as Jekyll would expect).
+exclude:	[ lib/Font-Awesome/src, ]
