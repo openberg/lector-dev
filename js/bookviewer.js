@@ -116,8 +116,8 @@ BookViewer.prototype.view = function(book, chapter = 0, endOfChapter = false) {
  * @type {string} The font size, as a CSS property.
  */
 Object.defineProperty(BookViewer.prototype, "fontSize", {
-  get: function() { 
-    return this._fontSize; 
+  get: function() {
+    return this._fontSize;
   },
   set: function(x) {
     this._fontSize = x;
