@@ -553,8 +553,13 @@ ChapterContents.prototype = {
           img.removeAttribute("height");
         }
       });
-      [...xml.querySelectorAll("html > body svg image")].forEach(img => {
-        this._generateLink(img, "href", "http://www.w3.org/1999/xlink");
+      [...xml.querySelectorAll("html > body svg")].forEach(svg => {
+        [...svg.querySelectorAll("image")].forEach(img => {
+          this._generateLink(img, "href", "http://www.w3.org/1999/xlink");
+        });
+        if (!svg.getAttribute("preserveAspectRatio") || svg.getAttribute("preserveAspectRatio") == "none") {
+          svg.setAttribute("preserveAspectRatio", "xMidYMid");
+        }
       });
       [...xml.querySelectorAll("html > body iframe")].forEach(iframe => {
         this._generateLink(iframe, "src");
