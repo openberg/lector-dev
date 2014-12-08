@@ -25,7 +25,12 @@ html, body {
     z-index: 5;
 }
 
-
+@media (min-width: 700px) {
+	.arrow {
+		font-size: 200%;
+	}
+}
+	
 .hidden {
     opacity: 0;
 }
