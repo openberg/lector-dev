@@ -61,7 +61,8 @@ function BookViewer(element) {
    *
    * @type {string}
    */
-  this._fontSize = Config.fontSize;
+  this._fontSize = Config.BookViewer.fontSize;
+  console.log("instanciation this._fontSize", this._fontSize);
 
   /**
    * The name of the theme (may be `null` for no theme).
@@ -115,9 +116,10 @@ BookViewer.prototype.view = function(book, chapter = 0, endOfChapter = false) {
  *
  * @type {string} The font size, as a CSS property.
  */
+
 Object.defineProperty(BookViewer.prototype, "fontSize", {
-  get: function() {
-    return this._fontSize;
+  get: function() { 
+    return this._fontSize; 
   },
   set: function(x) {
     this._fontSize = x;
@@ -239,9 +241,10 @@ BookViewer.prototype._getChapterContentsForChapter = function(chapter) {
     console.log("BookViewer", "_getChapterContentsForEntry", "Reusing existing ChapterContents");
   } else {
     console.log("BookViewer", "_getChapterContentsForEntry", "Constructing new ChapterContents");
-    contents = new ChapterContents(entry, num, this._view.book);
+    contents = new ChapterContents(entry, num, this._view.book, this);
     this._view.chapterContentsByEntry.set(entry, contents);
   }
+
   return contents;
 }
 
@@ -392,7 +395,7 @@ BookViewer.prototype._keyboardNavigation = function(code) {
  * of contents.
  * @param {Book} book The book containing the chapter.
  */
-function ChapterContents(entry, num, book) {
+function ChapterContents(entry, num, book, bookViewer) {
   if (!entry || !(entry instanceof Book.Resource)) {
     throw new TypeError("Not a Book.Entry");
   }
@@ -422,6 +425,14 @@ function ChapterContents(entry, num, book) {
    * @type {Book}
    */
   this._book = book;
+
+  
+  /**
+   * The bookViewer.
+   *
+   * @type{BookViewer}
+   */
+  this._bookViewer = bookViewer;
 
 
   /**
@@ -523,7 +534,7 @@ ChapterContents.prototype = {
       head.appendChild(injectLinkTheme);
 
       // 1.3 Customize the font size
-      body.style.fontSize = this._book.fontSize;
+      body.style.fontSize = this._bookViewer.fontSize;
 
       // 2. Inject global book scripts
       // 2.1 The part that ensures that we can navigate
