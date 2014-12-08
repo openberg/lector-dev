@@ -23,7 +23,12 @@ html, body {
     position: absolute;
     bottom: 0;
     z-index: 5;
-	font-size:200%;
+}
+@media (min-width: 700px)
+{
+	.arrow{
+		font-size:200%;
+	}
 }
 
 
