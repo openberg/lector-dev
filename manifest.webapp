@@ -6,12 +6,18 @@
     "url": "http://lector.yoric.rajtel.name"
   },
   "icons": {
-    "60": "/img/icon60.png",
-    "128": "/img/icon128.png",
-    "256": "/img/icon256.png"
+    "16": "/lector-dev/img/icon16.png",
+    "32": "/lector-dev/img/icon32.png",
+    "48": "/lector-dev/img/icon48.png",
+    "60": "/lector-dev/img/icon60.png",
+    "64": "/lector-dev/img/icon64.png",
+    "90": "/lector-dev/img/icon90.png",
+    "128": "/lector-dev/img/icon128.png",
+    "256": "/lector-dev/img/icon256.png",
+    "512": "/lector-dev/img/icon512.png"
   },
   "description": "open-source, open-standards e-Book reader.",
-  "launch_path": "/index.html",
+  "launch_path": "/lector-dev/index.html",
   "default_locale": "en",
   "type": "web",
   "fullscreen": "true",
@@ -20,7 +26,7 @@
       "filters": {
         "type": ["application/epub+zip"]
       },
-      "href": "/index.html?action=open",
+      "href": "/lector-dev/index.html?action=open",
       "disposition": "window",
       "returnValue": "false"
     },
@@ -28,7 +34,7 @@
       "filters": {
         "type": ["application/epub+zip"]
       },
-      "href": "/index.html?action=view",
+      "href": "/lector-dev/index.html?action=view",
       "disposition": "window",
       "returnValue": "false"
     }
