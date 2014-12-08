@@ -202,6 +202,10 @@ $("menu_top_right").addEventListener("click", event => {
   }
 });
 
+$("menu_top_left").addEventListener("click", event => {
+  $("welcome").classList.remove("scrolledleft");
+});
+
 $("menu_top_right_contents").addEventListener("click", event => {
   event.stopPropagation();
 });
