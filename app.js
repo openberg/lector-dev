@@ -62,6 +62,7 @@ bookViewer.notifications.addObserver("book:open", function(event) {
   console.log("App", "Opened book", event);
   $("welcome").classList.add("scrolledleft");
   $("contents").classList.remove("invisible");
+  $("arrows").classList.remove("hidden");
   Menus.top.showText(event.book.title);
   document.title = "Lector: " + event.book.title;
 });
