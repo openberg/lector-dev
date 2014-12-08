@@ -109,6 +109,20 @@ filePicker.notifications.addObserver("file:open", event => {
   console.log("App", "Opening file from the file picker", event.file);
   library.open(event.file).then(book => bookViewer.view(book));
 });
+/**
+ * @todo : use popup librairie to generalise communication
+ */
+filePicker.notifications.addObserver("file:nopicker", event => {
+  console.log("App", "no file picker");
+  document.body.innerHTML += '<div class="popup" style="height:50%;width:80%;left:10%;top:25%;background-color:white;position:absolute;border:1px solid black;" onclick="this.parentNode.removeChild(this);">'+
+          '<p>You need to install a file picker app before.</p>'+
+          '<p> Maybe one of this links : '+ 
+          (("mozSetMessageHandler" in navigator) ? 
+          ('<a href="https://marketplace.firefox.com/app/explorer">https://marketplace.firefox.com/app/explorer</a>'+
+          '<a href="https://marketplace.firefox.com/app/finder">https://marketplace.firefox.com/app/finder</a>') : 
+          ('<a href="https://play.google.com/store/apps/details?id=com.estrongs.android.pop">https://play.google.com/store/apps/details?id=com.estrongs.android.pop</a>'))+
+          '</p>'
+});
 
 //
 // If the user clicks on an epub from another application,
