@@ -280,7 +280,22 @@ function getAnchor(name) {
   // In older HTML, anchors map to <a name="...">`,
   // so we need to walk all the anchors of the document
   // until we find the right one.
-  return [...document.anchors].find(x => x.name == name);
+  element = [...document.anchors].find(x => x.name == name);
+  if (element && !element.getAttribute("id")) {
+    // Cache the result, to find it faster next time.
+    element.setAttribute("id", name);
+  }
+  return element;
+}
+
+/**
+ * Get the page for an element.
+ *
+ * @param {Element} element
+ * @return {number} 0-indexed page number for the element.
+ */
+function getPageOf(element) {
+  return Math.floor(element.offsetLeft / gInnerWidth);
 }
 
 /**
@@ -295,7 +310,7 @@ function scrollToPage(where) {
   console.log("Contents", "scrollToPage", where);
   var width = gInnerWidth;
   var scrollMaxX = document.body.scrollWidth;
-  var lastPage = Math.ceil(scrollMaxX / width) - 1;
+  var lastPage = getPageOf(getAnchor("lector_end"));
   if (where instanceof Element) {
     console.log("Contents", "scrollToPage", "element", where);
     if (!where) {
@@ -303,7 +318,7 @@ function scrollToPage(where) {
       return;
     }
     // Pick the coordinates to scroll the element into view.
-    where = Math.floor(where.offsetLeft / width);
+    where = getPageOf(where);
   }
   console.log("Content", "scrollToPage", "destination", where);
   if (typeof where != "number") {
@@ -324,7 +339,7 @@ window.Lector.scrollToPage = scrollToPage;
  */
 function scrollBy(deltaPages, mayChangeChapter = true) {
   console.log("Content", "scrollBy", deltaPages, mayChangeChapter)
-  var scrollMaxX = document.body.scrollWidth;
+  var lastPage = getPageOf(getAnchor("lector_end"));
   var nextPage = currentPage + deltaPages;
   var width = gInnerWidth;
   if (mayChangeChapter) {
@@ -334,7 +349,7 @@ function scrollBy(deltaPages, mayChangeChapter = true) {
       // Ignore any further scrolling.
       Touch.uninit();
       return;
-    } else if (nextPage * width >= scrollMaxX) {
+    } else if (nextPage > lastPage) {
       window.parent.postMessage({method: "changeChapterBy", args: [1]}, "*");
       // Ignore any further scrolling.
       Touch.uninit();
