@@ -498,10 +498,10 @@ ChapterContents.prototype = {
       //
       // Adapt XML document for proper display.
       //
-      var head = xml.querySelector("html > head");
-      var body = xml.querySelector("html > body");
+      var head = xml.getElementsByTagName("head")[0];
+      var body = xml.getElementsByTagName("body")[0];
 
-      this._title = head.querySelector("title").textContent;
+      this._title = xml.title;
 
       // 1. Inject global book stylesheet
       // 1.1 The static part
@@ -586,17 +586,18 @@ ChapterContents.prototype = {
       console.log("ChapterContents", "Creating new root");
       var root = xml.createElement("div");
       root.setAttribute("id", "lector_root");
-      for (var child of [...xml.body.childNodes]) {
-        xml.body.removeChild(child);
+
+      for (var child of [...body.childNodes]) {
+        body.removeChild(child);
         root.appendChild(child);
       }
-      xml.body.appendChild(root);
+      body.appendChild(root);
 
       // Add a specific node at the end of the document to be able to
       // scroll quickly to the end.
       var end = xml.createElement("div");
       end.setAttribute("id", "lector_end");
-      xml.body.appendChild(end);
+      body.appendChild(end);
 
       console.log("ChapterContents", "Waiting until all rewrites are complete");
       return Promise.all(this._resources).then(() => {
