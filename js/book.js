@@ -156,7 +156,12 @@ Book.Resource.prototype = {
    * @return Promise<Document>
    */
   asDocument:function(key, autorelease = true) {
-    return this._asXHR(key, "document", "application/xhtml+xml", "responseXML", autorelease);
+    var mimeType = "application/xhtml+xml";
+    var fileName = key._entry._name;
+    if (fileName.match("(.*)\.htm")) {
+      mimeType = "text/html";
+    }
+    return this._asXHR(key, "document", mimeType, "responseXML", autorelease);
   },
 
   _asXHR: function(key, responseType, mimeType, field, autorelease = true) {
