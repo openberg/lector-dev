@@ -110,6 +110,13 @@ filePicker.notifications.addObserver("file:open", event => {
   library.open(event.file).then(book => bookViewer.view(book));
 });
 
+// Open user Doc when no file picker installed
+filePicker.notifications.addObserver("file:nopicker", () => {
+  console.log("App", "nopicker", "No File Picker installed - ( "+(("mozSetMessageHandler" in navigator) ? "firefoxOS" : "android")+" ) - opening user documentation to install File Picker");
+    library.open("samples/lector.epub").then(book => bookViewer.view(book, 
+                ("mozSetMessageHandler" in navigator) ? "firefox os.html" : "android.html")) ;
+});
+
 //
 // If the user clicks on an epub from another application,
 // attempt to open the book.
