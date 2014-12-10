@@ -2,6 +2,8 @@
 
 [OpenBerg Lector](http://openberg.github.io/lector/) is an open-source, cross-platform e-Book reader written in HTML5. You may use it from any computer, without any installation.
 
+For the moment, Lector supports only the epub format.
+
 ## A word of warning
 
 This is *alpha software* (version 0.1 to be more precise). It should work, but expect bugs, imperfections and missing features. For instance, some books cannot be opened, or may not work properly.
