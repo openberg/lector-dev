@@ -133,7 +133,8 @@ if ("mozSetMessageHandler" in navigator) {
 // Populate the library menu, then display it.
 //
 var library = new Library([BookEPub]);
-(function init_library() {
+library.init().then(() => {
+  console.log("App", "Library is initialized");
   var libraryElement = $("library_entries");
   library.entries.forEach(entry => {
     var li = document.createElement("li");
@@ -165,7 +166,8 @@ var library = new Library([BookEPub]);
     }
   });
   libraryElement.classList.remove("hidden");
-})();
+});
+
 library.notifications.addObserver("library:open:failure", event => {
   Menus.bottom.showText("Error while opening book: " + event.error);
 });

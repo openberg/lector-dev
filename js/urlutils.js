@@ -44,5 +44,47 @@ function cleanupBlobURL(string) {
 }
 exports.cleanupBlobURL = cleanupBlobURL;
 
+
+/**
+ * Download some data.
+ *
+ * @param {string|URL} The origin of the data.
+ * @param {object} options Download options, as an object
+ * that may contain the following fields:
+ *   {string} field The name of the XHR field contaiing the result.
+ *     If unspecified, use the `response`.
+ *   {string} responseType A responseType for the XHR.
+ *     If unspecified, use the XHR default.
+ *   {string} mimeType A mime type for the XHR.
+ *     If unspecified, let the server or OS pick the mime type.
+ *
+ * @return {Promise}
+ */
+function download(source, options = {}) {
+  if (typeof source == "string") {
+    source = toURL(source);
+  }
+  if (!(source instanceof URL)) {
+    throw new TypeError("Expected a URL, got " + source);
+  }
+  return new Promise((resolve, reject) => {
+    var downloader = new XMLHttpRequest();
+    downloader.addEventListener("load", (e) => {
+      resolve(downloader[options.field || "response"]);
+    });
+    downloader.addEventListener("abort", reject);
+    downloader.addEventListener("cancel", reject);
+    downloader.open("GET", source);
+    if ("responseType" in options) {
+      downloader.responseType = options.responseType;
+    }
+    if ("mimeType" in options) {
+      downloader.overrideMimeType(options.mimeType);
+    }
+    downloader.send();
+  });
+}
+exports.download = download;
+
 return exports;
 });

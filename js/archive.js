@@ -1,4 +1,8 @@
-window.define(['js/urlutils'], function(UrlUtils) {
+define([
+  'js/urlutils'
+], function(
+  UrlUtils
+) {
 "use strict";
 
 var zip = window.zip; // The zip library, defined by lib/zip.js/WebContent/zip.js
@@ -50,22 +54,15 @@ Archive.prototype = {
       throw new TypeError("Expected a URL");
     }
     console.log("Archive", "_initFromURL", url, typeof url);
-    this._promiseReader = new Promise((resolve, reject) => {
-      var downloader = new XMLHttpRequest();
-      downloader.addEventListener("error", e => {
-        reject(new Error(e));
-      });
-      downloader.addEventListener("loadend", (e) => {
-        console.log("Archive", "_initFromURL", "loadend", downloader, e);
-        if (!downloader.response) {
-          return;
-        }
-        zip.createReader(new zip.BlobReader(downloader.response), resolve, reject);
-      });
-      downloader.open("GET", url.href);
-      downloader.responseType = "blob";
-      downloader.send();
+    var promise = UrlUtils.download(url, {
+      responseType: "blob"
     });
+    promise = promise.then(blob =>
+      new Promise((resolve, reject) => {
+        zip.createReader(new zip.BlobReader(blob), resolve, reject);
+      })
+    );
+    this._promiseReader = promise;
     this._promiseReader.catch(error => {
       console.error("Archive", "_initFromURL", error);
     });

@@ -1,4 +1,8 @@
-window.define(function(BookEpub) {
+window.define([
+  'js/urlutils'
+], function(
+  UrlUtils
+) {
 "use strict";
 
 var console = window.console;
@@ -160,21 +164,25 @@ Book.Resource.prototype = {
   },
 
   _asXHR: function(key, responseType, mimeType, field, autorelease = true) {
-    var promiseURL = this.asObjectURL(key);
-    var promise = new Promise(resolve =>
-      promiseURL.then(url => {
-        var parser = new XMLHttpRequest();
-        parser.addEventListener("loadend", (e) => {
-          if (autorelease) {
-            this.release(key);
-          }
-          resolve(parser[field]);
-        });
-        parser.open("GET", url);
-        parser.responseType = responseType;
-        parser.overrideMimeType(mimeType);
-        parser.send();
-    }));
+    var promise = this.asObjectURL(key);
+    promise = promise.then(url =>
+      UrlUtils.download(url, {
+        responseType: responseType,
+        mimeType: mimeType,
+        field: field
+      })
+    );
+    promise = promise.then(result => {
+      if (autorelease) {
+        this.release(key);
+      }
+      return result;
+    }, error => {
+      if (autorelease) {
+        this.release(key);
+      }
+      throw error;
+    });
     return promise;
   },
 };

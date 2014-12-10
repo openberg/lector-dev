@@ -13,7 +13,6 @@ var console = window.console;
 var BookEpub = function(file) {
   Book.call(this);
   console.log("BookEpub", "constructing");
-
   // Function to call once initialization is complete.
   var resolveInitialized = null;
 
