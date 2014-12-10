@@ -16,6 +16,7 @@ type="text/javascript" defer="defer"></script>
 
 <link rel="stylesheet" type="text/css" href="css/style.css" />
 <link rel="stylesheet" type="text/css" href="css/menu.css" />
+<link rel="stylesheet" type="text/css" href="lib/Font-Awesome/css/font-awesome.min.css" />
 </head>
 <body>
 
@@ -62,26 +63,37 @@ type="text/javascript" defer="defer"></script>
 
 <!-- The top and bottom menus -->
 <div id="menu_top" class="top menu hidden">
-  <div id="menu_top_left" class="top left menu_height">
-    &crarr;
-  </div>
-  <div id="menu_top_contents">
-  </div>
-  <div id="menu_top_right" class="top right menu_height">
-    <div class="drop_down_menu">
-      ⚙
-      <ul id="menu_top_right_contents" class="folded_up">
-        <li class="drop_down_menu_item">
-          <!-- Change the size of the font -->
-          Tt <input type="text" value="15" id="input_fontsize"></input>
-        </li>
-        <li class="drop_down_menu_item">
-          <!-- Change the color theme -->
-          <span class="button" id="button_night">☽</span>
-          <span class="button lowered" id="button_day">☼</span>
-        </li>
-      </ul>
+  <div class="padding_wrapper">
+
+    <div id="menu_top_left" class="menu_button pull_left">
+      <i class="fa fa-reply fa-lg"></i>
     </div>
+
+    <div id="menu_top_right" class="menu_button pull_right">
+      <i class="fa fa-cog fa-lg"></i>
+
+      <div class="drop_down_menu">
+        <ul id="menu_top_right_contents" class="folded_up">
+          <li class="drop_down_menu_item">
+            <!-- Change the size of the font -->
+            <span class="menu_option_title"><i class="fa fa-font"></i>  Text size</span>
+            <i id="decrease_font_size" class="fa fa-minus fa-lg"></i>
+            <input type="text" value="15" id="input_fontsize"></input>
+            <i id="increase_font_size" class="fa fa-plus fa-lg"></i>
+          </li>
+          <li class="drop_down_menu_item">
+            <!-- Change the color theme -->
+            <span class="menu_option_title"><i class="fa fa-moon-o"></i> Night mode</span>
+            <i class="fa fa-toggle-off fa-lg"></i>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div id="menu_top_contents">
+    </div>
+
+    <div class="clearfloats"></div>
   </div>
 </div>
 

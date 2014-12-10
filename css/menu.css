@@ -19,6 +19,11 @@
   color: green;
 }
 
+
+/**
+ * Positionning classes.
+ */
+
 .left {
   left: 0;
   text-align: left;
@@ -29,9 +34,25 @@
   text-align: right;
 }
 
+.pull_left {
+  float: left;
+}
+
+.pull_right {
+  float: right;
+}
+
+.clearfloats {
+  clear: both;
+}
+
 .top {
   position: absolute;
   top: 0;
+  width: 100%;
+
+  border-bottom-left-radius: 10px 7px;
+  border-bottom-right-radius: 10px 7px;
 }
 
 .bottom {
@@ -46,25 +67,95 @@
   cursor: pointer;
 }
 
+.padding_wrapper {
+  padding: 10px 10px;
+}
+
+#menu_top_contents {
+  font-weight: bold;
+}
+
+/**
+ * Menu buttons
+ */
+
+.menu_button {
+  /* Minimal size for a 1.33em icon. */
+  min-height:2em;
+  min-width: 2em;
+
+  background: linear-gradient(to bottom, rgb(32, 164, 32), darkgreen);
+  border: : 2px solid darkgreen;
+  box-shadow: 0px 1px 2px rgb(34, 34, 34);
+  border-radius: 5px 5px;
+}
+
+.menu_button:hover {
+  background: linear-gradient(to bottom, darkgreen, rgb(32, 164, 32));
+}
+
+.menu_button:active {
+  box-shadow: 0px 1px 2px rgba(34, 34, 34, 0.4) inset;
+}
+
+.menu_button > i {
+  line-height: 40%;
+  vertical-align: bottom;
+}
+
 /**
  * Drop down menu
  */
 
 .drop_down_menu ul {
   background-color: green;
-  list-style: none;
+  border: 2px solid darkgreen;
+  border-radius: 3px 3px;
+
   position: absolute;
-  min-width: 15vw;
-  max-width: 30vw;
-  transition-property: height;
+  top: 40px; /* below minimal menu height bar + 5 pixels margin */
+  right: 10px; /* same as menu padding */
+
+  min-width: 20vw;
+  max-width: 60vw;
+  padding: 10px 0px;
+
+  list-style: none;
+
+  transition-property: height, opacity;
   transition-duration: 1s;
   overflow-y: hidden;
+
+  font-family: sans-serif;
+  font-size: 1.05em;
+}
+
+@media (max-width: 1000px) {
+  .drop_down_menu ul {
+    min-width: 30vw;
+  }
+}
+
+@media (max-width: 700px) {
+  .drop_down_menu ul {
+    min-width: 60vw;
+  }
 }
 
 .drop_down_menu li {
+  min-height: 1.5em;
   display: block;
   text-align: right;
-  padding: 1pt;
+  padding: 1px 10px;
+}
+
+.drop_down_menu li:hover {
+  background-color: darkgreen;
+}
+
+.menu_option_title {
+  display: inline-block;
+  float: left;
 }
 
 .drop_down_menu input {
@@ -79,10 +170,12 @@
 
 .folded_up {
   height: 0;
+  opacity: 0;
 }
 
 .unfolded_up {
   height: 3em;
+  opacity: 1;
 }
 
 .right > .drop_down_menu ul {
@@ -104,8 +197,8 @@
 span.button {
   box-shadow: 2px 2px darkgreen;
   transform: translate(-1px, -1px);
-  width: 1em;
-  height: 1em;
+  width: 1.5em;
+  height: 1.5em;
   padding: 0;
   margin: 0;
   text-align: center;
