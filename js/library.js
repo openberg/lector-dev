@@ -144,6 +144,7 @@ Library.prototype = {
    * @return {Promise<Book>} A book, already initialized.
    */
   open: function(source) {
+    console.log("Library", "open", source);
     var promise = this.init();
     promise = promise.then(() => {
       var entry = new Entry(this, null, null, source);
@@ -168,6 +169,7 @@ Library.prototype = {
    * to the database.
    */
   _import: function(book, source) {
+    console.log("Library", "_import", book);
     if (!(book instanceof Book)) {
       throw new TypeError("Expected a book, got " + book);
     }
@@ -179,20 +181,48 @@ Library.prototype = {
       );
       return promise;
     }
-    if (source instanceof File || source instanceof Blob) {
-      var transaction = this._db.transaction(["books"], "readwrite");
-      var books = transaction.objectStore("books");
-      var book = {
-        title: book.title || "?",
-        author: book.author || "?",
-        file: source,
-        cover: null,
-      };
-      return new Promise((resolve, reject) => {
-        var request = books.add(book);
+    if (!(source instanceof Blob)) {
+      throw new TypeError("Expected URL, string, File or Blob, got " + source);
+    }
+    var transaction = this._db.transaction(["books"], "readwrite");
+    var books = transaction.objectStore("books");
+    var title = book.title || "?";
+    var author = book.author || "?";
+
+    // Find out if the book was already stored. If so, we need to overwrite the
+    // previous instance (the use may have re-opened because the book has been
+    // updated or had been previously misdownloaded).
+    // To find the book, we locate all books with the same title, and check if
+    // one of them also has the same author.
+    var promise = new Promise((resolve, reject) => {
+      var request = books.index("byTitle").openCursor(IDBKeyRange.only(title));
+      request.onsuccess = event => {
+        var cursor = event.target.result;
+        if (!cursor) {
+          // We have not found the book, create it.
+          var data = {
+            title: title,
+            author: author,
+            cover: null,
+            file: source
+          };
+          console.log("Library", "_import", "book not found, adding");
+          return finish(data, books.add(data));
+        }
+        if (cursor.value.author == author) {
+          // We have found the book, update it.
+          console.log("Library", "_import", "found the book, updating");
+          var data = cursor.value;
+          data.file = source;
+          return finish(data, cursor.update(data));
+        }
+        return cursor.continue();
+      }
+      request.onerror = reject;
+      var finish = (data, request) => {
         request.onsuccess = (event) => {
-          console.log("Library", "_import", "books.add", event);
-          var entry = new Entry(this, book.title, book.author, event.id);
+          console.log("Library", "_import", "finish", event);
+          var entry = new Entry(this, data.title, data.author, event.id);
           this._entries.push(entry);
           this.notifications.notify("library:update:newbook", {
             entry: entry
@@ -200,10 +230,15 @@ Library.prototype = {
         };
         request.onerror = reject;
         transaction.oncomplete = resolve;
-      });
-    } else {
-      throw new TypeError("Expected URL, string, File or Blob, got " + source);
-    }
+      }
+    });
+
+    promise = promise.then(event => {
+      console.log("Library", "_import", "complete", event);
+    }, error => {
+      console.error("Library", "_import", "failed", errort);
+    });
+    return promise;
   }
 };
 
