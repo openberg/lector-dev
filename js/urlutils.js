@@ -74,7 +74,7 @@ function download(source, options = {}) {
     });
     downloader.addEventListener("abort", reject);
     downloader.addEventListener("cancel", reject);
-    downloader.open("GET", source);
+    downloader.open("GET", source.href);
     if ("responseType" in options) {
       downloader.responseType = options.responseType;
     }
