@@ -14,7 +14,7 @@ window.Lector = {};
  * The number of the current page inside the chapter,
  * (0-indexed).
  */
-var currentPage = 0;
+var gCurrentPage = 0;
 
 /**
  * The width of the contents of the window.
@@ -42,9 +42,11 @@ function setupColumns() {
   console.log("Content", "Setting up columns", document.body, window);
   gInnerWidth = window.innerWidth;
   gInnerHeight = window.innerHeight;
+  resizing = null;
+  scrollToPage(gCurrentPage);
 }
 
-var BUFFERING_DURATION_MS = 15;
+var BUFFERING_DURATION_MS = 60;
 var resizing = null;
 window.addEventListener("resize", function() {
   if (resizing) {
@@ -167,7 +169,7 @@ var Touch = {
       var originalX = this._latestTouchStart.touches[0].clientX;
       var currentX = this._latestTouchMove.touches[0].clientX;
       var deltaX = currentX - originalX;
-      var defaultPosition = currentPage * gInnerWidth;
+      var defaultPosition = gCurrentPage * gInnerWidth;
       scrollToPosition(defaultPosition - deltaX);
     });
   },
@@ -324,9 +326,9 @@ function scrollToPage(where) {
   if (typeof where != "number") {
     throw new TypeError("Expected a number");
   }
-  currentPage = where;
+  gCurrentPage = where;
   window.parent.postMessage({method: "pagechange", args:[{page: where, lastPage: lastPage}]}, "*");
-  scrollToPosition(currentPage * width);
+  scrollToPosition(gCurrentPage * width);
 }
 
 window.Lector.scrollToPage = scrollToPage;
@@ -340,7 +342,7 @@ window.Lector.scrollToPage = scrollToPage;
 function scrollBy(deltaPages, mayChangeChapter = true) {
   console.log("Content", "scrollBy", deltaPages, mayChangeChapter)
   var lastPage = getPageOf(getAnchor("lector_end"));
-  var nextPage = currentPage + deltaPages;
+  var nextPage = gCurrentPage + deltaPages;
   var width = gInnerWidth;
   if (mayChangeChapter) {
     if (nextPage < 0) {
