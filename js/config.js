@@ -8,6 +8,11 @@ var DEBUG = true;
  */
 var Config = {
   /**
+   *if `true`, go fullscreen when we open a book
+   */
+  allowFullScreen: false,
+
+  /**
    * The name of the application.
    */
   application: "OpenBerg Lector",
