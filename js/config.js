@@ -8,6 +8,11 @@ var DEBUG = true;
  */
 return {
   /**
+   *set the config field to determine whether we actually go to fullscreen
+   */
+  allowfullscreen: false,
+
+  /**
    * The name of the application.
    */
   application: "OpenBerg Lector",
