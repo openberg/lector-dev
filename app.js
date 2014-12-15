@@ -2,11 +2,12 @@ window.require(['js/polyfills',
                 'js/book',
                 'js/bookviewer',
                 'js/book-epub.js',
+                'js/config',
                 'js/filepicker',
                 'js/library',
                 'js/menu',
                 'js/urlutils'],
-  function(_, Book, BookViewer, BookEPub, FilePicker, Library, Menu, UrlUtils) {
+  function(_, Book, BookViewer, BookEPub, Config, FilePicker, Library, Menu, UrlUtils) {
 "use strict";
 
 var $ = id => document.getElementById(id);
@@ -150,7 +151,9 @@ library.init().then(() => {
       //
       //If the user clicks on a book, it loads in mode fullscreen
       //
-      document.body.mozRequestFullScreen();
+      if (Config.allowFullScreen){
+        document.body.mozRequestFullScreen();
+      }
     });
     libraryElement.insertBefore(li, $("pick"));
 
