@@ -10,6 +10,24 @@
   color: white;
 }
 
+.info_none {
+  /* hide the message before that a book is opened*/
+  display: none;
+}
+
+.info_display {
+  /* display the message when a book is opened*/
+  color: white;
+  z-index: 10;
+  position: absolute;
+  top: 50%;
+  text-align: center;
+  opacity: 0.8;
+  background-color: green;
+  width: 100%;
+  display: block;
+}
+
 .menu:hover {
   /* Unhide the menu when the mouse hovers on it*/
   opacity: 1;
