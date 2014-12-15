@@ -139,12 +139,12 @@ var library = new Library([BookEPub]);
     var li = document.createElement("li");
     li.classList.add("library_entry");
     li.addEventListener("click", function() {
-	
-     
-		var elmt = document.getElementById("info");
-		elmt.style.display = "block";
-
-		setTimeout(function(){	var elmt = document.getElementById("info"); elmt.style.opacity = "0";},3000);
+      setTimeout(function(){
+	    $("info_none").id = "info_display";
+	  },1000);
+      setTimeout(function(){
+	    $("info_display").id = "info_none";
+	  },4000);
       // If the user clicks on a book, attempt to
       // open it.
       //
