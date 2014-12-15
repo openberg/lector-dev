@@ -220,4 +220,51 @@ $("menu_top_right_contents").addEventListener("click", event => {
   event.stopPropagation();
 });
 
+//
+// App Installation:
+//   Remove "Install App" button if the app is already installed
+//   Install App when the user clicks on the "Install App" button
+//
+(function setupInstall() {
+
+  var openbergManifestUrl =  UrlUtils.toURL("manifest.webapp").href;
+  console.log("App", "Manifest URL : " + openbergManifestUrl);
+
+  if (!("mozApps" in window.navigator)) {
+    // We can't install on this platform.
+    $("install").remove();
+    return;
+  }
+
+  var Apps = window.navigator.mozApps;
+
+  var request = Apps.checkInstalled(openbergManifestUrl);
+
+  request.onsuccess = function(e) {
+    if (request.result) {
+      console.log("App", "App is installed!");
+      $("install").remove();
+    } else {
+      console.log("App", "App is not installed!");
+    }
+  };
+
+  $("install").addEventListener("click", function() {
+    var Apps = window.navigator.mozApps;
+
+    var request = Apps.install(openbergManifestUrl);
+
+    request.onsuccess = function () {
+      $("install").remove();
+      Menus.bottom.showText("Installation successful!");
+      console.log("App", "Installation successful!");
+    };
+    request.onerror = function () {
+      // Display the error information from the DOMError object
+      Menus.bottom.showText("Install failed, maybe the app is already installed.");
+      console.log("App", "Install failed, error: " + this.error.name);
+    };
+  });
+})();
+
 });
