@@ -6,7 +6,7 @@ var DEBUG = true;
 /**
  * Miscellaneous information on the application.
  */
-return {
+var Config = {
   /**
    * The name of the application.
    */
@@ -28,6 +28,9 @@ return {
   set debug(x) {
     DEBUG = x;
   },
+
+  isExecutedLocally: window.location.protocol == "file:",
+
 
   BookViewer: {
     /**
@@ -55,5 +58,7 @@ return {
     POLYFILL_URL_SEARCH_PARAMS: false,
   },
 };
+
+return Config;
 
 });

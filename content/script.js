@@ -94,7 +94,7 @@ window.addEventListener("keypress", function(e) {
     case "Space":
       e.preventDefault();
       e.stopPropagation();
-      scrollBy(-1);
+      scrollBy(-1, "keypress");
       break;
     case "ArrowDown":
     case "ArrowRight":
@@ -102,7 +102,7 @@ window.addEventListener("keypress", function(e) {
     case "Backspace":
       e.preventDefault();
       e.stopPropagation();
-      scrollBy(1);
+      scrollBy(1, "keypress");
     default:
       break;
   }
@@ -194,11 +194,11 @@ var Touch = {
     if (Math.abs(deltaX) < gInnerWidth * .1) {
       // The finger moved by less than 10% of the width of the screen, it's
       // probably not intended as a swipe, so let's ignore it.
-      scrollBy(0);
+      scrollBy(0, "touchend");
     } else if (deltaX < 0) {
-      scrollBy(1);
+      scrollBy(1, "touchend");
     } else {
-      scrollBy(-1);
+      scrollBy(-1, "touchend");
     }
   },
   __ontouchend: null,
@@ -240,7 +240,7 @@ Touch.init();
 window.addEventListener("message", function(e) {
   switch (e.data.method) {
     case "scrollBy":
-      scrollBy(e.data.args[0]);
+      scrollBy(e.data.args[0], "ux");
       break;
     case "scrollToPage":
       scrollToPage(e.data.args[0]);
@@ -259,8 +259,8 @@ window.addEventListener("message", function(e) {
 
 function scrollToPosition(position) {
   var translation = "translateX(" + (-1 * position) + "px)";
-  console.log("Translation", translation);
-  console.log("scrolling to position", document.body.style.transform, translation);
+  console.log("Content", "Translation", translation);
+  console.log("Content", "scrolling to position", document.body.style.transform, translation);
   document.body.style.transform = translation;
 }
 
@@ -334,31 +334,46 @@ function scrollToPage(where) {
 window.Lector.scrollToPage = scrollToPage;
 
 /**
+ * Trigger a chapter change.
+ *
+ * @param {number} deltaChapter The number of chapters to advance.
+ * May be negative to scroll backwards.
+ */
+function changeChapterBy(deltaChapter, event, page) {
+  console.log("Content", "Need to change chapter", event, page);
+  if (deltaChapter == 0) {
+    throw new TypeError("Expected a non-0 chapter");
+  }
+
+  // Ignore any further scrolling.
+  Touch.uninit();
+
+  if (event == "keypress" || event == "ux") {
+    // Overscroll effect
+    scrollToPosition((gCurrentPage + (deltaChapter / 2)) * gInnerWidth);
+  }
+
+  // Trigger chapter change
+  window.parent.postMessage({method: "changeChapterBy", args: [deltaChapter]}, "*");
+}
+
+/**
  * Scroll forwards/backwards by a number of pages.
  *
  * @param {number} deltaPages The number of pages to scroll.
  * May be negative to scroll backwards. Ignored if 0.
  */
-function scrollBy(deltaPages, mayChangeChapter = true) {
-  console.log("Content", "scrollBy", deltaPages, mayChangeChapter)
+function scrollBy(deltaPages, event) {
+  console.log("Content", "scrollBy", deltaPages, event)
   var lastPage = getPageOf(getAnchor("lector_end"));
   var nextPage = gCurrentPage + deltaPages;
-  var width = gInnerWidth;
-  if (mayChangeChapter) {
-    if (nextPage < 0) {
-      console.log("Next page is < 0");
-      window.parent.postMessage({method: "changeChapterBy", args: [-1]}, "*");
-      // Ignore any further scrolling.
-      Touch.uninit();
-      return;
-    } else if (nextPage > lastPage) {
-      window.parent.postMessage({method: "changeChapterBy", args: [1]}, "*");
-      // Ignore any further scrolling.
-      Touch.uninit();
-      return;
-    }
+  if (nextPage < 0) {
+    return changeChapterBy(-1, event, nextPage);
+  } else if (nextPage > lastPage) {
+    return changeChapterBy(1, event, nextPage);
+  } else {
+    return scrollToPage(nextPage);
   }
-  scrollToPage(nextPage);
 }
 
 /**
