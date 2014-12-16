@@ -1,6 +1,6 @@
 {
   "name": "OpenBerg Lector",
-  "version": "7.0a1",
+  "version": "7.0a2",
   "developer": {
     "name": "David Rajchenbach-Teller",
     "url": "http://lector.yoric.rajtel.name"
@@ -39,5 +39,6 @@
       "returnValue": "false"
     }
   },
-  "orientation": ["portrait-primary"]
+  "orientation": ["portrait-primary"],
+  "appcache_path": "/lector-dev/manifest.appcache"
 }
