@@ -1,12 +1,20 @@
-window.require(['js/polyfills',
-                'js/book',
-                'js/bookviewer',
-                'js/book-epub.js',
-                'js/filepicker',
-                'js/library',
-                'js/menu',
-                'js/urlutils'],
-  function(_, Book, BookViewer, BookEPub, FilePicker, Library, Menu, UrlUtils) {
+define([
+  'js/polyfills', // polyfills needs to be loaded first
+  'js/book',
+  'js/bookviewer',
+  'js/book-epub.js',
+  'js/filepicker',
+  'js/library',
+  'js/menu',
+  'js/urlutils'
+], function(_,
+  Book,
+  BookViewer,
+  BookEPub,
+  FilePicker,
+  Library,
+  Menu,
+  UrlUtils) {
 "use strict";
 
 var $ = id => document.getElementById(id);
@@ -113,7 +121,7 @@ filePicker.notifications.addObserver("file:open", event => {
 // Open user Doc when no file picker installed
 filePicker.notifications.addObserver("file:nopicker", () => {
   console.log("App", "nopicker", "No File Picker installed - ( "+(("mozSetMessageHandler" in navigator) ? "firefoxOS" : "android")+" ) - opening user documentation to install File Picker");
-    library.open("samples/lector.epub").then(book => bookViewer.view(book, 
+    library.open("samples/lector.epub").then(book => bookViewer.view(book,
                 ("mozSetMessageHandler" in navigator) ? "firefox os.html" : "android.html")) ;
 });
 

@@ -1,11 +1,16 @@
-define(['js/book',
-        'js/config',
-        'js/notifications',
-        'js/urlutils'],
-  function(Book,
-           Config,
-           Notifications,
-           UrlUtils) {
+define([
+  'js/appcache',
+  'js/book',
+  'js/config',
+  'js/notifications',
+  'js/urlutils'
+], function(
+  AppCache,
+  Book,
+  Config,
+  Notifications,
+  UrlUtils
+) {
 "use strict";
 
 /**
@@ -424,7 +429,7 @@ function ChapterContents(entry, num, book, bookViewer) {
    */
   this._book = book;
 
-  
+
   /**
    * The bookViewer.
    *
@@ -494,9 +499,11 @@ ChapterContents.prototype = {
     if (this._promiseLoaded) {
       return this._promiseLoaded;
     }
-    return this._enqueue(() => {
+    var promise = AppCache.promiseReady;
+    promise = promise.then(() => this._enqueue(() => {
       return this._promiseLoaded = this._load();
-    });
+    }));
+    return promise;
   },
   // Implementation of `load`
   _load: function() {
