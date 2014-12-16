@@ -1,0 +1,57 @@
+---
+# Whenever we push a new version of Lector, this file is
+# preprocessed and changed, which ensures that the browser
+# clears the application cache.
+---
+
+CACHE MANIFEST
+#
+# Latest update: {{ site.time | date_to_xmlschema }}
+#
+
+#
+# Html
+#
+index.html
+
+#
+# CSS
+#
+css/style.css
+css/menu.css
+content/books.css
+
+#
+# JS
+#
+app.js
+js/archive.js
+js/book.js
+js/book-epub.js
+js/bookviewer.js
+js/config.js
+js/filepicker.js
+js/library.js
+js/menu.js
+js/notifications.js
+js/polyfills.js
+js/urlutils.js
+content/script.js
+
+#
+# Libraries
+#
+lib/lie/dist/lie.js
+lib/require.js/require.js
+lib/Font-Awesome/css/font-awesome.min.css
+lib/Font-Awesome/fonts/fontawesome-webfont.woff?v=4.2.0
+lib/Font-Awesome/fonts/fontawesome-webfont.woff
+lib/zip.js/WebContent/zip.js
+lib/zip.js/WebContent/inflate.js
+
+#
+# Books
+#
+samples/lector.epub
+samples/alice.epub
+samples/1984.epub
