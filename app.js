@@ -3,6 +3,7 @@ define([
   'js/book',
   'js/bookviewer',
   'js/book-epub.js',
+  'js/config',
   'js/filepicker',
   'js/library',
   'js/menu',
@@ -11,6 +12,7 @@ define([
   Book,
   BookViewer,
   BookEPub,
+  Config,
   FilePicker,
   Library,
   Menu,
@@ -158,7 +160,9 @@ library.init().then(() => {
       //
       //If the user clicks on a book, it loads in mode fullscreen
       //
-      document.body.mozRequestFullScreen();
+      if (Config.allowFullScreen){
+        document.body.mozRequestFullScreen();
+      }
     });
     libraryElement.insertBefore(li, $("pick"));
 
