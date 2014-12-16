@@ -55,3 +55,8 @@ lib/zip.js/WebContent/inflate.js
 samples/lector.epub
 samples/alice.epub
 samples/1984.epub
+
+#
+# Other
+#
+build.txt
