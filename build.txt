@@ -1,0 +1,5 @@
+---
+# This file is preprocessed by Jekyll when pushing.
+---
+
+{{ site.time | date_to_xmlschema }}

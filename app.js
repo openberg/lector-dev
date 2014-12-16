@@ -3,6 +3,7 @@ define([
   'js/book',
   'js/bookviewer',
   'js/book-epub.js',
+  'js/config',
   'js/filepicker',
   'js/library',
   'js/menu',
@@ -11,6 +12,7 @@ define([
   Book,
   BookViewer,
   BookEPub,
+  Config,
   FilePicker,
   Library,
   Menu,
@@ -274,5 +276,14 @@ $("menu_top_right_contents").addEventListener("click", event => {
     };
   });
 })();
+
+if (Config.isExecutedLocally) {
+  console.log("App", "version", "application executed locally");
+} else {
+  // Display version
+  UrlUtils.download("build.txt", {mimeType: "text/plain"}).then(version => {
+    console.log("App", "version", version);
+  });
+}
 
 });
