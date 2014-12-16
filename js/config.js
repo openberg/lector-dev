@@ -7,6 +7,12 @@ var DEBUG = true;
  * Miscellaneous information on the application.
  */
 var Config = {
+
+  /**
+   * if `true`, go fullscreen when we open a book
+   */
+  allowFullScreen: false,
+
   /**
    * The name of the application.
    */

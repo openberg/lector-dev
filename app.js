@@ -160,7 +160,9 @@ library.init().then(() => {
       //
       //If the user clicks on a book, it loads in mode fullscreen
       //
-      document.body.mozRequestFullScreen();
+      if (Config.allowFullScreen) {
+        document.body.mozRequestFullScreen();
+      }
     });
     libraryElement.insertBefore(li, $("pick"));
 
