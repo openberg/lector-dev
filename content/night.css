@@ -1,0 +1,97 @@
+html, body {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    overflow:hidden;
+	background-color:#263238;
+	color:#FFF;
+    font-family: Garamond, Palatino, Palladio, serif;
+}
+
+
+* {
+	color: white;
+}
+
+.bookviewer {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    border: none;
+    overflow: hidden;
+    margin: none;
+}
+
+
+.arrow {
+    position: absolute;
+    bottom: 0;
+    z-index: 5;
+}
+
+
+.hidden {
+    opacity: 0;
+}
+
+.invisible {
+    visibility: hidden;
+}
+
+.hidden_input_file {
+    width: 0;
+    height: 0;
+    opacity: 0;
+}
+
+.scrolledleft {
+  transition-property: transform;
+  transition-duration: 1s;
+  transform: translateX(-100%);
+}
+
+ul.library_entries {
+  list-style: none;
+  padding:0;
+}
+
+li.library_entry {
+  width: 100%;
+  max-width: 300px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 0;
+  padding-right: 0
+  padding-bottom: 1em;
+  padding-top: 1em;
+  vertical-align: middle;
+  border-bottom: inset black 1px;
+  transition: background-color 1s;
+  cursor: pointer;
+}
+
+.book_title {
+  font-style: italic;
+}
+
+li.library_entry:hover {
+  background-color: white;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+#welcome {
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    text-align: center;
+    padding-top: 5%;
+    background-color: #263238;
+    overflow-y: scroll;
+}
+
+

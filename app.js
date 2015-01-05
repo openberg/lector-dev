@@ -216,6 +216,57 @@ if (params) {
   }
 }
 
+
+var isDay = true;
+
+$("toggle").addEventListener("click", function(){
+	if (isDay) {
+		bookViewer.theme = UrlUtils.toURL('content/night.css').href;
+		$("toggle").className = "fa fa-toggle-on fa-lg";
+		isDay = false;
+	} else {
+		bookViewer.theme = UrlUtils.toURL('content/day.css').href;
+		$("toggle").className = "fa fa-toggle-off fa-lg";
+		isDay = true;
+	}
+	
+
+/*
+	var classT = $("toggle").className;
+	if( classT == "fa fa-toggle-off fa-lg"){
+		var headID = document.getElementsByTagName("head")[0];         
+		var cssNode = document.createElement('link');
+		cssNode.type = 'text/css';
+		cssNode.rel = 'stylesheet';
+		cssNode.href = UrlUtils.toURL('content/night.css');
+		headID.appendChild(cssNode);
+		
+		}
+	if(classT == "fa fa-toggle-on fa-lg"){
+		$("toggle").className = "fa fa-toggle-off fa-lg";
+		var headID = document.getElementsByTagName("head")[0];         
+		var cssNode = document.createElement('link');
+		cssNode.type = 'text/css';
+		cssNode.rel = 'stylesheet';
+		cssNode.href = 'content/day.css';
+		headID.appendChild(cssNode);
+		bookViewer.theme = UrlUtils.toURL('content/day.css').href;
+		$("toggle").className = "fa fa-toggle-off fa-lg";
+		}
+*/
+});
+
+
+/*$("button_day").onclick = function(){ 
+		var headID = document.getElementsByTagName("head")[0];         
+		var cssNode = document.createElement('link');
+		cssNode.type = 'text/css';
+		cssNode.rel = 'stylesheet';
+		cssNode.href = 'content/day.css';
+		headID.appendChild(cssNode);
+		bookViewer.theme = UrlUtils.toURL('content/day.css').href;
+};*/
+
 $("menu_top_right").addEventListener("click", event => {
   event.stopPropagation();
   var elt = $("menu_top_right_contents");

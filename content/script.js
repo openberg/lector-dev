@@ -248,6 +248,9 @@ window.addEventListener("message", function(e) {
     case "setFontSize":
       setFontSize(e.data.args[0]);
       break;
+	case "setTheme":
+	  setTheme(e.data.args[0]);
+	  break;
     case "eval":
       // Cheat mode, useful for debugging
       console.log("eval", eval(e.data.args[0]));
@@ -386,6 +389,7 @@ function setFontSize(size) {
 }
 
 function setTheme(path) {
+  console.log("Content", "theme", "Setting theme", path);
   var link = document.getElementById("lector:injectLink:theme");
   link.setAttribute("href", path);
 }
