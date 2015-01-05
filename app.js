@@ -233,6 +233,31 @@ $("menu_top_right_contents").addEventListener("click", event => {
 });
 
 //
+// UI events to set the font size
+//
+$("decrease_font_size").addEventListener("click", event => {
+  var font_size_input = $("input_fontsize");
+  if (font_size_input.value > 0) {
+    font_size_input.value = parseInt(font_size_input.value)-1;
+  }
+  bookViewer.fontSize = font_size_input.value + "pt";
+  console.log("Updating font size " + font_size_input.value);
+});
+
+$("increase_font_size").addEventListener("click", event => {
+  var font_size_input = $("input_fontsize");
+  font_size_input.value = parseInt(font_size_input.value)+1;
+  bookViewer.fontSize = font_size_input.value + "pt";
+  console.log("Updating font size " + font_size_input.value);
+});
+
+$("input_fontsize").addEventListener("change", event => {
+  var font_size_input = $("input_fontsize");
+  bookViewer.fontSize = font_size_input.value + "pt";
+  console.log("Updating font size " + font_size_input.value);
+});
+
+//
 // App Installation:
 //   Remove "Install App" button if the app is already installed
 //   Install App when the user clicks on the "Install App" button
@@ -287,5 +312,4 @@ if (Config.isExecutedLocally) {
     console.log("App", "version", version);
   });
 }
-
 });
