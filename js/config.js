@@ -40,10 +40,21 @@ var Config = {
 
   BookViewer: {
     /**
-     * The size of book fonts, as a CSS property.
+     * The default size of book fonts, as an integer (size in pt).
      */
-    fontSize: "15px",
+    defaultFontSize: 16,
+
+    /**
+     * Viewer's font size parameters: integers of font sizes in `pt`.
+     *  - minimum font size
+     *  - maximum font size
+     *  - font size increment
+     */
+    minFontSize: 6,
+    maxFontSize: 32,
+    fontSizeIncrement: 2,
   },
+
 
   /**
    * The theme to use.

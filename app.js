@@ -233,6 +233,33 @@ $("menu_top_right_contents").addEventListener("click", event => {
 });
 
 //
+// UI events to set the font size
+//
+$("input_fontsize").value = Config.BookViewer.defaultFontSize;
+
+var updateFontSize = function(font_size_delta) {
+  var font_size_input = $("input_fontsize");
+  var font_size = parseInt(bookViewer.fontSize);
+  font_size += font_size_delta;
+
+  if (!isNaN(font_size)
+      && (font_size >= Config.BookViewer.minFontSize)
+      && (font_size <= Config.BookViewer.maxFontSize)) {
+
+    font_size_input.value = font_size;
+    bookViewer.fontSize = font_size + "pt";
+    console.log("App", "Updating font size to " + font_size + "pt");
+  }
+}
+
+$("decrease_font_size").addEventListener("click", () => {
+  updateFontSize(-Config.BookViewer.fontSizeIncrement);
+});
+$("increase_font_size").addEventListener("click", () => {
+  updateFontSize(Config.BookViewer.fontSizeIncrement);
+});
+
+//
 // App Installation:
 //   Remove "Install App" button if the app is already installed
 //   Install App when the user clicks on the "Install App" button
@@ -287,5 +314,4 @@ if (Config.isExecutedLocally) {
     console.log("App", "version", version);
   });
 }
-
 });
