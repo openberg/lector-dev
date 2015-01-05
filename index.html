@@ -19,6 +19,24 @@ type="text/javascript" defer="defer"></script>
 <link rel="stylesheet" type="text/css" href="css/menu.css" />
 <link rel="stylesheet" type="text/css" href="lib/Font-Awesome/css/font-awesome.min.css" />
 </head>
+
+<script>   
+  /* 
+   * Test if fat arrows are supported.
+   *
+   * We do this here as browsers have "interesting" ways of parsing code in `eval` in js files, which causes the entire file to fail parsing instead 
+   * of just the offending string.
+   */ 
+
+  try {
+    eval("x => 0");
+  } catch (e) {
+    if (e instanceof SyntaxError) {
+      alert("This application is known to work with Firefox 35 and above.");	
+    }
+  }
+</script>
+
 <body>
 
 <!-- Navigation arrows -->
