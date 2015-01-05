@@ -1,4 +1,4 @@
-define([
+	define([
   'js/appcache',
   'js/book',
   'js/config',
@@ -140,6 +140,7 @@ Object.defineProperty(BookViewer.prototype, "theme", {
     return this._theme;
   },
   set: function(x) {
+	console.log("BookViewer", "theme", "setting", x);
     this._theme = x;
     this._iframe.contentWindow.postMessage({method: "setTheme", args:[x]}, "*");
   }
@@ -529,14 +530,16 @@ ChapterContents.prototype = {
       head.appendChild(injectLink);
 
       // 1.2 The theme
+      console.log("BookViewer", "injecting theme", JSON.stringify(this._book));
       var injectLinkTheme = xml.createElement("link");
       injectLinkTheme.setAttribute("id", "lector:injectLink:theme");
       injectLinkTheme.setAttribute("rel", "stylesheet");
       injectLinkTheme.setAttribute("type", "text/css");
-      if (this._book.theme) {
-        injectLinkTheme.setAttribute("href", UrlUtils.toURL("theme").href);
+      if (this._bookViewer._theme) {
+        injectLinkTheme.setAttribute("href", UrlUtils.toURL(this._bookViewer._theme).href);
       }
       head.appendChild(injectLinkTheme);
+
 
       // 1.3 Customize the font size
       body.style.fontSize = this._bookViewer.fontSize;
