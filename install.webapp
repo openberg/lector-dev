@@ -1,0 +1,49 @@
+---
+# This file is preprocessed by Jekyll to set the baseurl.
+---
+
+{
+  "_comment": "This file is a copy of the manifest.webapp file, which is necessary for WebIDE. Both files should be synchronized, except for the baseurl value.",
+  "name": "OpenBerg Lector",
+  "version": "7.0a2",
+  "developer": {
+    "name": "David Rajchenbach-Teller",
+    "url": "http://lector.yoric.rajtel.name"
+  },
+  "icons": {
+    "16": "{{ site.baseurl }}/img/icon16.png",
+    "32": "{{ site.baseurl }}/img/icon32.png",
+    "48": "{{ site.baseurl }}/img/icon48.png",
+    "60": "{{ site.baseurl }}/img/icon60.png",
+    "64": "{{ site.baseurl }}/img/icon64.png",
+    "90": "{{ site.baseurl }}/img/icon90.png",
+    "128": "{{ site.baseurl }}/img/icon128.png",
+    "256": "{{ site.baseurl }}/img/icon256.png",
+    "512": "{{ site.baseurl }}/img/icon512.png"
+  },
+  "description": "open-source, open-standards e-Book reader.",
+  "launch_path": "{{ site.baseurl }}/index.html",
+  "default_locale": "en",
+  "type": "web",
+  "fullscreen": "true",
+  "activities": {
+    "open": {
+      "filters": {
+        "type": ["application/epub+zip"]
+      },
+      "href": "{{ site.baseurl }}/index.html?action=open",
+      "disposition": "window",
+      "returnValue": "false"
+    },
+    "view": {
+      "filters": {
+        "type": ["application/epub+zip"]
+      },
+      "href": "{{ site.baseurl }}/index.html?action=view",
+      "disposition": "window",
+      "returnValue": "false"
+    }
+  },
+  "orientation": ["portrait-primary"],
+  "appcache_path": "{{ site.baseurl }}/manifest.appcache"
+}

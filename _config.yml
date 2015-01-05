@@ -6,3 +6,8 @@
 # which would cause a jekyll build to fail (the _include repository isn't at
 # the project's root as Jekyll would expect).
 exclude:	[ lib/Font-Awesome/src, ]
+
+# Specify the project name used in the url.
+# It is used during the preprocessing of the install.webapp file.
+# This variable needs to be changed before each release : from `lector-dev` to `lector`.
+baseurl:        /lector-dev

@@ -239,7 +239,7 @@ $("menu_top_right_contents").addEventListener("click", event => {
 //
 (function setupInstall() {
 
-  var openbergManifestUrl =  UrlUtils.toURL("manifest.webapp").href;
+  var openbergManifestUrl =  UrlUtils.toURL("install.webapp").href;
   console.log("App", "Manifest URL : " + openbergManifestUrl);
 
   if (!("mozApps" in window.navigator)) {

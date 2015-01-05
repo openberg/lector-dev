@@ -1,4 +1,5 @@
 {
+  "_comment": "Copy of install.webapp file for WebIDE (without preprocessing). Both files should be synchronized.",
   "name": "OpenBerg Lector",
   "version": "7.0a2",
   "developer": {
@@ -6,18 +7,18 @@
     "url": "http://lector.yoric.rajtel.name"
   },
   "icons": {
-    "16": "/lector-dev/img/icon16.png",
-    "32": "/lector-dev/img/icon32.png",
-    "48": "/lector-dev/img/icon48.png",
-    "60": "/lector-dev/img/icon60.png",
-    "64": "/lector-dev/img/icon64.png",
-    "90": "/lector-dev/img/icon90.png",
-    "128": "/lector-dev/img/icon128.png",
-    "256": "/lector-dev/img/icon256.png",
-    "512": "/lector-dev/img/icon512.png"
+    "16": "/img/icon16.png",
+    "32": "/img/icon32.png",
+    "48": "/img/icon48.png",
+    "60": "/img/icon60.png",
+    "64": "/img/icon64.png",
+    "90": "/img/icon90.png",
+    "128": "/img/icon128.png",
+    "256": "/img/icon256.png",
+    "512": "/img/icon512.png"
   },
   "description": "open-source, open-standards e-Book reader.",
-  "launch_path": "/lector-dev/index.html",
+  "launch_path": "/index.html",
   "default_locale": "en",
   "type": "web",
   "fullscreen": "true",
@@ -26,7 +27,7 @@
       "filters": {
         "type": ["application/epub+zip"]
       },
-      "href": "/lector-dev/index.html?action=open",
+      "href": "/index.html?action=open",
       "disposition": "window",
       "returnValue": "false"
     },
@@ -34,11 +35,11 @@
       "filters": {
         "type": ["application/epub+zip"]
       },
-      "href": "/lector-dev/index.html?action=view",
+      "href": "/index.html?action=view",
       "disposition": "window",
       "returnValue": "false"
     }
   },
   "orientation": ["portrait-primary"],
-  "appcache_path": "/lector-dev/manifest.appcache"
+  "appcache_path": "/manifest.appcache"
 }
