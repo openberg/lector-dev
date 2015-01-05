@@ -66,7 +66,7 @@ function BookViewer(element) {
    *
    * @type {string}
    */
-  this._fontSize = Config.BookViewer.fontSize;
+  this._fontSize = Config.BookViewer.defaultFontSize + "pt";
 
   /**
    * The name of the theme (may be `null` for no theme).
