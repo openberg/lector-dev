@@ -235,26 +235,41 @@ $("menu_top_right_contents").addEventListener("click", event => {
 //
 // UI events to set the font size
 //
+$("input_fontsize").value = Config.BookViewer.defaultFontSize;
+
 $("decrease_font_size").addEventListener("click", event => {
   var font_size_input = $("input_fontsize");
-  if (font_size_input.value > 0) {
-    font_size_input.value = parseInt(font_size_input.value)-1;
+  var font_size = parseInt(bookViewer.fontSize);
+  font_size -= Config.BookViewer.fontSizeIncrement;
+
+  if (font_size > Config.BookViewer.minFontSize) {
+    font_size_input.value = font_size;
+    bookViewer.fontSize = font_size + "pt";
+    console.log("App", "Updating font size to " + font_size);
   }
-  bookViewer.fontSize = font_size_input.value + "pt";
-  console.log("Updating font size " + font_size_input.value);
 });
 
 $("increase_font_size").addEventListener("click", event => {
   var font_size_input = $("input_fontsize");
-  font_size_input.value = parseInt(font_size_input.value)+1;
-  bookViewer.fontSize = font_size_input.value + "pt";
-  console.log("Updating font size " + font_size_input.value);
+  var font_size = parseInt(bookViewer.fontSize);
+  font_size += Config.BookViewer.fontSizeIncrement;
+
+  if (font_size < Config.BookViewer.maxFontSize) {
+    font_size_input.value = font_size;
+    bookViewer.fontSize = font_size + "pt";
+    console.log("App", "Updating font size to " + font_size)
+  }
 });
 
 $("input_fontsize").addEventListener("change", event => {
   var font_size_input = $("input_fontsize");
-  bookViewer.fontSize = font_size_input.value + "pt";
-  console.log("Updating font size " + font_size_input.value);
+  var font_size = parseInt(font_size_input.value);
+
+  if (!isNaN(font_size)) {
+    font_size_input.value = font_size;
+    bookViewer.fontSize = font_size + "pt";
+    console.log("App", "Updating font size to " + font_size)
+  }
 });
 
 //
