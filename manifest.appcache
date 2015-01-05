@@ -25,6 +25,7 @@ content/books.css
 # JS
 #
 app.js
+js/appcache.js
 js/archive.js
 js/book.js
 js/book-epub.js
