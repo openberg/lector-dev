@@ -21,6 +21,8 @@ define([
 
 var $ = id => document.getElementById(id);
 var bookViewer = new BookViewer($("contents"));
+const appearTime = 1000;
+const holdTime = 4000;
 
 //
 // Make sure that we do not rotate if executed on a phone/tablet,
@@ -65,6 +67,19 @@ bookViewer.notifications.addObserver("chapter:enter", function(event) {
 });
 
 //
+// Display a message when opening a book
+//
+function displayMessage() {
+  setTimeout(() => {
+    $("info").classList.add("info_none");
+    $("info").classList.add("info_display");
+  },appearTime);
+  setTimeout(() => {
+    $("info").classList.remove("info_display");
+  },holdTime);
+}
+
+//
 // When opening a book, hide the library, cancel this if we fail
 // to open the book.
 //
@@ -74,6 +89,7 @@ bookViewer.notifications.addObserver("book:open", function(event) {
   $("contents").classList.remove("invisible");
   Menus.top.showText(event.book.title);
   document.title = "Lector: " + event.book.title;
+  displayMessage();
 });
 bookViewer.notifications.addObserver("book:opening", function(event) {
   $("welcome").classList.add("scrolledleft");
@@ -150,7 +166,8 @@ library.init().then(() => {
     var li = document.createElement("li");
     li.classList.add("library_entry");
     li.addEventListener("click", function() {
-      //
+	  displayMessage();
+	  //
       // If the user clicks on a book, attempt to
       // open it.
       //
