@@ -521,7 +521,7 @@ ChapterContents.prototype = {
 
       // 1. Inject global book stylesheet
       // 1.1 The static part
-      var injectLink = xml.createElement("link");
+      var injectLink = xml.createElementNS("http://www.w3.org/1999/xhtml", "link");
       injectLink.setAttribute("id", "lector:injectLink");
       injectLink.setAttribute("rel", "stylesheet");
       injectLink.setAttribute("type", "text/css");
@@ -529,7 +529,7 @@ ChapterContents.prototype = {
       head.appendChild(injectLink);
 
       // 1.2 The theme
-      var injectLinkTheme = xml.createElement("link");
+      var injectLinkTheme = xml.createElementNS("http://www.w3.org/1999/xhtml", "link");
       injectLinkTheme.setAttribute("id", "lector:injectLink:theme");
       injectLinkTheme.setAttribute("rel", "stylesheet");
       injectLinkTheme.setAttribute("type", "text/css");
@@ -543,7 +543,7 @@ ChapterContents.prototype = {
 
       // 2. Inject global book scripts
       // 2.1 The part that ensures that we can navigate
-      var injectScript = xml.createElement("script");
+      var injectScript = xml.createElementNS("http://www.w3.org/1999/xhtml", "script");
       injectScript.setAttribute("id", "lector:injectScript");
       injectScript.setAttribute("type", "text/javascript");
       injectScript.setAttribute("src", UrlUtils.toURL("content/script.js").href);
@@ -600,7 +600,7 @@ ChapterContents.prototype = {
       // Move the contents of the document inside a <div id="lector_root">
       // to let us add margins without breaking existing layout.
       console.log("ChapterContents", "Creating new root");
-      var root = xml.createElement("div");
+      var root = xml.createElementNS("http://www.w3.org/1999/xhtml", "div");
       root.setAttribute("id", "lector_root");
       for (var child of [...body.childNodes]) {
         body.removeChild(child);
@@ -610,7 +610,7 @@ ChapterContents.prototype = {
 
       // Add a specific node at the end of the document to be able to
       // scroll quickly to the end.
-      var end = xml.createElement("div");
+      var end = xml.createElementNS("http://www.w3.org/1999/xhtml", "div");
       end.setAttribute("id", "lector_end");
       body.appendChild(end);
 
@@ -629,12 +629,12 @@ ChapterContents.prototype = {
       return Promise.resolve(new XMLSerializer().serializeToString(xml));
     });
     promise = promise.then(source => {
-      console.log("ChapterContents", "load", "Encoding string");
+      console.log("ChapterContents", "load", "Encoding string", source);
       return Promise.resolve(new TextEncoder().encode(source));
     });
     promise = promise.then(encoded => {
       console.log("ChapterContents", "load", "Converting to object URL");
-      var blob = new Blob([encoded], { type: "text/html" });
+      var blob = new Blob([encoded], { type: "application/xhtml+xml" });
       this._url = URL.createObjectURL(blob);
       this._loaded = true;
     });
