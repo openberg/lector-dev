@@ -507,7 +507,7 @@ ChapterContents.prototype = {
   },
   // Implementation of `load`
   _load: function() {
-    var promise = this._entry.asDocument(this, false);
+    var promise = this._entry.asXML(this, false);
     promise = promise.then(xml => {
       console.log("ChapterContents", "Opened document", xml);
 
@@ -602,17 +602,17 @@ ChapterContents.prototype = {
       console.log("ChapterContents", "Creating new root");
       var root = xml.createElement("div");
       root.setAttribute("id", "lector_root");
-      for (var child of [...xml.body.childNodes]) {
-        xml.body.removeChild(child);
+      for (var child of [...body.childNodes]) {
+        body.removeChild(child);
         root.appendChild(child);
       }
-      xml.body.appendChild(root);
+      body.appendChild(root);
 
       // Add a specific node at the end of the document to be able to
       // scroll quickly to the end.
       var end = xml.createElement("div");
       end.setAttribute("id", "lector_end");
-      xml.body.appendChild(end);
+      body.appendChild(end);
 
       console.log("ChapterContents", "Waiting until all rewrites are complete");
       return Promise.all(this._resources).then(() => {
