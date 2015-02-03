@@ -222,7 +222,7 @@ BookEpub.prototype = {
    */
   get title() {
     var node =
-        this._packageDocument.querySelector("package > metadata > title");
+      this._packageDocument.querySelector("package > metadata title")
     if (node) {
       return node.textContent;
     }
@@ -236,7 +236,7 @@ BookEpub.prototype = {
    */
   get author() {
     var node =
-        this._packageDocument.querySelector("package > metadata > creator");
+        this._packageDocument.querySelector("package > metadata creator");
     if (node) {
       return node.textContent;
     }
