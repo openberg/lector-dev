@@ -233,6 +233,94 @@ var Touch = {
 };
 Touch.init();
 
+/**
+ * Using the mouse wheel/touchpad to scroll.
+ */
+var Wheel = {
+  // `true` if we have scheduled an animation for the next tick and
+  // not started displaying it yet.
+  _isAnimationScheduled: false,
+
+  // The number of pixels by which the wheel has started moving since
+  // the start of the current wheel move.
+  _accumulatedDelta: 0,
+
+  // A timer used to reset accumulatedDelta to 0 after a few hundred
+  // milliseconds of inactivity.
+  _reset: null,
+
+  // A placeholder, to make sure that the browser never receives the
+  // wheel events, which may cause history browsing on some platforms.
+  onwheelPlaceHolder: function(event) {
+    event.preventDefault();
+    event.stopPropagation();
+  },
+  _onwheel: function(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (this._isAnimationScheduled) {
+      // Ignore events while we're scrolling
+      return;
+    }
+    if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) {
+      this._accumulatedDelta += event.deltaX;
+    } else {
+      this._accumulatedDelta += event.deltaY;
+    }
+    if (Math.abs(this._accumulatedDelta) < gInnerWidth / 2) {
+      // Don't scroll yet
+
+      // If we stop scrolling for 1/3 second, reset delta.
+      if (this._reset) {
+        window.clearTimeout(this._reset);
+      }
+      this._reset = window.setTimeout(300, () => {
+        this._reset = null;
+        this._accumulatedDelta = 0;
+      });
+      return;
+    }
+
+    // Now scroll
+    var direction = Math.sign(this._accumulatedDelta);
+    this._isAnimationScheduled = true;
+    this._accumulatedDelta = 0;
+    requestAnimationFrame(() => {
+      console.log("Content", "wheel", "scrolling now", direction);
+      this._isAnimationScheduled = false;
+      scrollBy(direction);
+    });
+  },
+  __onwheel: null,
+
+  _initialized: false,
+  /**
+   * Initialize mouse wheel handling.
+   */
+  init: function() {
+    if (this._initialized) {
+      return;
+    }
+    this._initialized = true;
+    // Make sure that all event handlers are bound to `this`.
+    for (var k of ["_onwheel"]) {
+      this["_" + k] = this[k].bind(this);
+    }
+    window.removeEventListener("wheel", this.onwheelPlaceHolder);
+    window.addEventListener("wheel", this.__onwheel);
+  },
+
+  uninit: function() {
+    if (!this._initialized) {
+      return;
+    }
+    this._initialized = false;
+    window.removeEventListener("wheel", this.__onwheel);
+    window.addEventListener("wheel", this.onwheelPlaceHolder);
+  }
+};
+Wheel.init();
+
 /////////////
 // Navigation
 //
@@ -309,6 +397,7 @@ function getPageOf(element) {
  */
 function scrollToPage(where) {
   Touch.init();
+  Wheel.init();
   console.log("Contents", "scrollToPage", where);
   var width = gInnerWidth;
   var scrollMaxX = document.body.scrollWidth;
@@ -347,6 +436,7 @@ function changeChapterBy(deltaChapter, event, page) {
 
   // Ignore any further scrolling.
   Touch.uninit();
+  Wheel.uninit();
 
   if (event == "keypress" || event == "ux") {
     // Overscroll effect
