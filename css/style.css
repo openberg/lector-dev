@@ -2,8 +2,7 @@ html, body {
     height: 100%;
     width: 100%;
     margin: 0;
-    overflow:hidden;
-    background-color: white;
+    background-color: rgb(95%, 95%, 95%);
     font-family: Garamond, Palatino, Palladio, serif;
 }
 
@@ -30,7 +29,7 @@ html, body {
 	    font-size: 200%;
     }
 }
-	
+
 .hidden {
     opacity: 0;
 }
@@ -84,12 +83,10 @@ a {
     color: inherit;
 }
 #welcome {
-    position: relative;
+    position: absolute;
     width: 100%;
-    height: 100%;
     z-index: 10;
     text-align: center;
-    padding-top: 5%;
-    background-color: rgb(95%, 95%, 95%);
-    overflow-y: scroll;
+    top: 5%;
+    overflow: scroll;
 }

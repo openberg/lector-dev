@@ -32,11 +32,6 @@ var bookViewer = new BookViewer($("contents"));
   }
 });
 
-window.addEventListener("wheel", e => {
-  e.stopPropagation();
-  e.preventDefault();
-});
-
 //
 // When clicking on the arrows, change page
 //
