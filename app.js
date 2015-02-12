@@ -48,6 +48,13 @@ $("arrow_right").addEventListener("click", function(event) {
 });
 
 //
+// Return to the main menu to pick a new book
+//
+$("menu_top_left").addEventListener("click", function(event) {
+    $("welcome").classList.remove("scrolledleft");
+});
+
+//
 // When changing book, page, chapter, etc, update
 // the top/bottom bars accordingly.
 //
