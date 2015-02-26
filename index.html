@@ -20,19 +20,19 @@ type="text/javascript" defer="defer"></script>
 <link rel="stylesheet" type="text/css" href="lib/Font-Awesome/css/font-awesome.min.css" />
 </head>
 
-<script>   
-  /* 
+<script>
+  /*
    * Test if fat arrows are supported.
    *
-   * We do this here as browsers have "interesting" ways of parsing code in `eval` in js files, which causes the entire file to fail parsing instead 
+   * We do this here as browsers have "interesting" ways of parsing code in `eval` in js files, which causes the entire file to fail parsing instead
    * of just the offending string.
-   */ 
+   */
 
   try {
     eval("x => 0");
   } catch (e) {
     if (e instanceof SyntaxError) {
-      alert("This application requires a browser that implements ES6, such as a recent version of Firefox. Your browser is apparently missing some ES6 features.");	
+      alert("This application requires a browser that implements ES6, such as a recent version of Firefox. Your browser is apparently missing some ES6 features.");
     }
   }
 </script>
@@ -103,10 +103,12 @@ type="text/javascript" defer="defer"></script>
             <input type="text" id="input_fontsize"></input>
             <i id="increase_font_size" class="fa fa-plus fa-lg"></i>
           </li>
-          <li class="drop_down_menu_item">
+          <li id="toggle_theme" class="drop_down_menu_item">
             <!-- Change the color theme -->
-            <span class="menu_option_title"><i class="fa fa-moon-o"></i> Night mode</span>
-            <i class="fa fa-toggle-off fa-lg"></i>
+            <span class="menu_option_title"><i class="fa fa-eye-slash"></i> Color mode</span>
+            <i id="no_theme" class="fa fa-adjust"></i>
+            <i id="night_theme" class="fa fa-moon-o"></i>
+            <i id="day_theme" class="fa fa-sun-o"></i>
           </li>
         </ul>
       </div>
