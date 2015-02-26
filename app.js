@@ -266,6 +266,40 @@ $("increase_font_size").addEventListener("click", () => {
   updateFontSize(Config.BookViewer.fontSizeIncrement);
 });
 
+(function() {
+  const THEMES = [
+    {elt: $("no_theme"), value: null},
+    {elt: $("night_theme"), value: "content/night.css"},
+    {elt: $("day_theme"), value: "content/day.css"},
+  ];
+  var themeIndex = 0;
+
+  var applyTheme = function() {
+    console.log("App", "Attempting to apply theme", themeIndex, THEMES);
+    THEMES.forEach(({elt}, i) => {
+      if (i == themeIndex) {
+        elt.classList.add("active_theme");
+        elt.classList.remove("passive_theme");
+      } else {
+        elt.classList.remove("active_theme");
+        elt.classList.add("passive_theme");
+      }
+    });
+    var theme = THEMES[themeIndex].value;
+    if (theme) {
+      bookViewer.theme = UrlUtils.toURL(theme).href;
+    } else {
+      bookViewer.theme = null;
+    }
+  };
+  applyTheme();
+  $("toggle_theme").addEventListener("click", () => {
+    console.log("App", "toggle_theme")
+    themeIndex = (themeIndex + 1) % THEMES.length;
+    applyTheme();
+  });
+})();
+
 //
 // App Installation:
 //   Remove "Install App" button if the app is already installed

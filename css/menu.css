@@ -211,3 +211,11 @@ span.button.lowered {
   box-shadow: none;
   transform: translate(0, 0);
 }
+
+.passive_theme {
+  opacity: .3;
+}
+
+.active_theme {
+
+}

@@ -1,0 +1,19 @@
+/*
+  This style sheet defines a day mode, for reading in black-on-white.
+*/
+
+body {
+  background-color: rgb(250, 250, 250) !important;
+}
+
+html {
+  background-color: rgb(250, 250, 250) !important;
+}
+
+* {
+  color: rgb(0, 0, 0) !important;
+}
+
+a {
+  text-decoration: rgb(10, 10, 10) underline dashed !important;
+}

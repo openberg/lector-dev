@@ -336,6 +336,9 @@ window.addEventListener("message", function(e) {
     case "setFontSize":
       setFontSize(e.data.args[0]);
       break;
+    case "setTheme":
+      setTheme(e.data.args[0]);
+      break;
     case "eval":
       // Cheat mode, useful for debugging
       console.log("eval", eval(e.data.args[0]));
@@ -475,9 +478,19 @@ function setFontSize(size) {
   document.body.style.fontSize = size;
 }
 
-function setTheme(path) {
+/**
+ * Set the current theme.
+ *
+ * @param {string} path The full path to a CSS file holding the theme,
+ * or `null` to remove any theme.
+ */
+function setTheme(path = null) {
   var link = document.getElementById("lector:injectLink:theme");
-  link.setAttribute("href", path);
+  if (path) {
+    link.setAttribute("href", path);
+  } else {
+    link.removeAttribute("href");
+  }
 }
 
 //
