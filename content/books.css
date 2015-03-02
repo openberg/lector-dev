@@ -61,3 +61,13 @@ img {
    `overflow:hidden` directive. */
   overflow: visible !important;
 }
+
+* {
+  transition-property: color;
+  transition-duration: 1s;
+}
+
+html, body {
+  transition-property: background-color;
+  transition-duration: 1s;
+}
