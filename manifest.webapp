@@ -1,4 +1,5 @@
 {
+  "_comment": "Copy of install.webapp file for WebIDE (without preprocessing). Both files should be synchronized.",
   "name": "Lector",
   "version": "0.2",
   "developer": {
