@@ -67,7 +67,7 @@ function download(source, options = {}) {
   if (!(source instanceof URL)) {
     throw new TypeError("Expected a URL, got " + source);
   }
-  return new Promise((resolve, reject) => {
+  var promise = new Promise((resolve, reject) => {
     var downloader = new XMLHttpRequest();
     downloader.addEventListener("load", (e) => {
       resolve(downloader[options.field || "response"]);
@@ -76,13 +76,24 @@ function download(source, options = {}) {
     downloader.addEventListener("cancel", reject);
     downloader.open("GET", source.href);
     if ("responseType" in options) {
-      downloader.responseType = options.responseType;
+      if (options.responseType == "objectURL") {
+        downloader.responseType = "blob";
+      } else {
+        downloader.responseType = options.responseType;
+      }
     }
     if ("mimeType" in options) {
       downloader.overrideMimeType(options.mimeType);
     }
     downloader.send();
   });
+  if ("responseType" in options && options.responseType == "objectURL") {
+    return promise.then(blob =>
+      URL.createObjectURL(blob)
+    );
+  } else {
+    return promise;
+  }
 }
 exports.download = download;
 

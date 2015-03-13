@@ -272,8 +272,8 @@ $("increase_font_size").addEventListener("click", () => {
 (function() {
   const THEMES = [
     {elt: $("no_theme"), value: null},
-    {elt: $("night_theme"), value: "content/night.css"},
-    {elt: $("day_theme"), value: "content/day.css"},
+    {elt: $("night_theme"), value: "night.css"},
+    {elt: $("day_theme"), value: "day.css"},
   ];
   var themeIndex = 0;
 
@@ -289,11 +289,7 @@ $("increase_font_size").addEventListener("click", () => {
       }
     });
     var theme = THEMES[themeIndex].value;
-    if (theme) {
-      bookViewer.theme = UrlUtils.toURL(theme).href;
-    } else {
-      bookViewer.theme = null;
-    }
+    bookViewer.theme = theme;
   };
   applyTheme();
   $("toggle_theme").addEventListener("click", () => {

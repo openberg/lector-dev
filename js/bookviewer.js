@@ -79,6 +79,17 @@ function BookViewer(element) {
   window.addEventListener("message", e => this._handleMessage(e));
 
   window.addEventListener("keypress", e => this._handleKeyPress(e));
+
+  // Pre-fetch shared resources for offline reading.
+  // Downloading them from this origin hits the appcache,
+  // while downloading them from the blob: origin would
+  // not.
+  this._resources = {
+    "script.js": UrlUtils.download("content/script.js", { responseType: "objectURL", mimeType: "text/javascript" }),
+    "day.css": UrlUtils.download("content/day.css", { responseType: "objectURL", mimeType: "text/css" }),
+    "night.css": UrlUtils.download("content/night.css", { responseType: "objectURL", mimeType: "text/css" }),
+    "books.css": UrlUtils.download("content/books.css", { responseType: "objectURL", mimeType: "text/css" }),
+  };
 }
 
 BookViewer.prototype = {};
@@ -140,8 +151,12 @@ Object.defineProperty(BookViewer.prototype, "theme", {
     return this._theme;
   },
   set: function(x) {
+    console.log("BookViewer", "set theme", x);
     this._theme = x;
-    this._iframe.contentWindow.postMessage({method: "setTheme", args:[x]}, "*");
+    var promise = x?this._resources[x]:Promise.resolve();
+    promise = promise.then(url =>
+      this._iframe.contentWindow.postMessage({method: "setTheme", args:[url]}, "*")
+    );
   }
 });
 
@@ -514,8 +529,12 @@ ChapterContents.prototype = {
       //
       // Adapt XML document for proper display.
       //
+      var html = xml.querySelector("html");
       var head = xml.querySelector("html > head");
       var body = xml.querySelector("html > body");
+
+      // An array of Promise representing the injections in progress.
+      var injections = [];
 
       this._title = head.querySelector("title").textContent;
 
@@ -525,7 +544,9 @@ ChapterContents.prototype = {
       injectLink.setAttribute("id", "lector:injectLink");
       injectLink.setAttribute("rel", "stylesheet");
       injectLink.setAttribute("type", "text/css");
-      injectLink.setAttribute("href", UrlUtils.toURL("content/books.css").href);
+      injections.push(this._bookViewer._resources["books.css"].then(url => {
+        injectLink.setAttribute("href", url)
+      }));
       head.appendChild(injectLink);
 
       // 1.2 The theme
@@ -533,8 +554,10 @@ ChapterContents.prototype = {
       injectLinkTheme.setAttribute("id", "lector:injectLink:theme");
       injectLinkTheme.setAttribute("rel", "stylesheet");
       injectLinkTheme.setAttribute("type", "text/css");
-      if (this._book.theme) {
-        injectLinkTheme.setAttribute("href", UrlUtils.toURL("theme").href);
+      if (this._bookViewer.theme) {
+        injections.push(this._bookViewer._resources[this._bookViewer.theme].then(url => {
+          injectLinkTheme.setAttribute("href", url)
+        }));
       }
       head.appendChild(injectLinkTheme);
 
@@ -546,7 +569,9 @@ ChapterContents.prototype = {
       var injectScript = xml.createElementNS("http://www.w3.org/1999/xhtml", "script");
       injectScript.setAttribute("id", "lector:injectScript");
       injectScript.setAttribute("type", "text/javascript");
-      injectScript.setAttribute("src", UrlUtils.toURL("content/script.js").href);
+      injections.push(this._bookViewer._resources["script.js"].then(url =>
+        injectScript.setAttribute("src", url)
+      ));
       injectScript.textContent = "// Nothing to see"; // Workaround serializer bug
       head.appendChild(injectScript);
 
@@ -615,7 +640,7 @@ ChapterContents.prototype = {
       body.appendChild(end);
 
       console.log("ChapterContents", "Waiting until all rewrites are complete");
-      return Promise.all(this._resources).then(() => {
+      return Promise.all([...this._resources, ...injections]).then(() => {
         console.log("ChapterContents", "All resources are now available");
         return Promise.resolve(xml);
       });

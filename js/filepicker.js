@@ -68,11 +68,11 @@ FilePicker.prototype = {
     };
     var activity = new MozActivity(options);
     activity.onsuccess = () => {
-      console.log("filepicker", "picked", activity.result);
+      console.log("Filepicker", "picked", activity.result, Object.keys(activity.result).join(", "));
       this.notifications.notify("file:open", { file: activity.result.blob });
     };
     activity.onerror = () => {
-      console.log("filepicker", "we could not pick a file");
+      console.log("Filepicker", "we could not pick a file");
       this.notifications.notify("file:nopicker", null);
     };
   },
