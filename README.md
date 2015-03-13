@@ -6,7 +6,7 @@ For the moment, Lector supports only the epub format.
 
 ## A word of warning
 
-This is *alpha software* (version 0.1 to be more precise). It should work, but expect bugs, imperfections and missing features. For instance, some books cannot be opened, or may not work properly.
+This is *alpha software* (version 0.2 to be more precise). It should work, but expect bugs, imperfections and missing features. For instance, some books cannot be opened, or may not work properly.
 
 Also, OpenBerg Lector has been developed and tested primarily for Firefox and Firefox OS. While the objective is to make it work with all modern browsers, we have not reached this stage.
 
