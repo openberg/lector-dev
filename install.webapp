@@ -1,11 +1,11 @@
 ---
 # This file is preprocessed by Jekyll to set the baseurl.
+# Please keep the contents of this file synchronized with manifest.webapp, except for the baseurl value.
 ---
 
 {
-  "_comment": "This file is a copy of the manifest.webapp file, which is necessary for WebIDE. Both files should be synchronized, except for the baseurl value.",
-  "name": "OpenBerg Lector",
-  "version": "7.0a2",
+  "name": "Lector",
+  "version": "0.2",
   "developer": {
     "name": "David Rajchenbach-Teller",
     "url": "http://lector.yoric.rajtel.name"
@@ -33,7 +33,7 @@
       },
       "href": "{{ site.baseurl }}/index.html?action=open",
       "disposition": "window",
-      "returnValue": "false"
+      "returnValue": false
     },
     "view": {
       "filters": {
@@ -41,7 +41,7 @@
       },
       "href": "{{ site.baseurl }}/index.html?action=view",
       "disposition": "window",
-      "returnValue": "false"
+      "returnValue": false
     }
   },
   "orientation": ["portrait-primary"],

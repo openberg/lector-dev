@@ -1,7 +1,7 @@
 {
   "_comment": "Copy of install.webapp file for WebIDE (without preprocessing). Both files should be synchronized.",
-  "name": "OpenBerg Lector",
-  "version": "7.0a2",
+  "name": "Lector",
+  "version": "0.2",
   "developer": {
     "name": "David Rajchenbach-Teller",
     "url": "http://lector.yoric.rajtel.name"
@@ -29,7 +29,7 @@
       },
       "href": "/index.html?action=open",
       "disposition": "window",
-      "returnValue": "false"
+      "returnValue": false
     },
     "view": {
       "filters": {
@@ -37,7 +37,7 @@
       },
       "href": "/index.html?action=view",
       "disposition": "window",
-      "returnValue": "false"
+      "returnValue": false
     }
   },
   "orientation": ["portrait-primary"],

@@ -138,13 +138,16 @@ filePicker.notifications.addObserver("file:nopicker", () => {
 // If the user clicks on an epub from another application,
 // attempt to open the book.
 //
-if ("mozSetMessageHandler" in navigator) {
-  navigator.mozSetMessageHandler('activity', function(request) {
-    console.log("App", "Opening file from the activity message handler", request.source.data);
-    library.open(request.source.data.blob).then(book => bookViewer.view(book));
-  });
+try {
+  if ("mozSetMessageHandler" in navigator) {
+    navigator.mozSetMessageHandler('activity', function(request) {
+      console.log("App", "Opening file from the activity message handler", request.source.data);
+      library.open(request.source.data.blob).then(book => bookViewer.view(book));
+    });
+  }
+} catch (ex) {
+  console.error("App", "Could not set up mozSetMessageHandler", ex);
 }
-
 
 //
 // Populate the library menu, then display it.
