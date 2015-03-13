@@ -485,6 +485,7 @@ function setFontSize(size) {
  * or `null` to remove any theme.
  */
 function setTheme(path = null) {
+  console.log("content", "setting theme", path);
   var link = document.getElementById("lector:injectLink:theme");
   if (path) {
     link.setAttribute("href", path);
